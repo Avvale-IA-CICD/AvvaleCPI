@@ -3,29 +3,30 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[SQUEUE JMS Sender] --> B{Reprocess?}
-    B -- Yes --> C{Step?}
-    B -- Discard --> D[Discarded Custom Status]
-    D --> E[Log Discarded Message]
-    E --> F[Discarded MaxRetries End]
-    C -- Step1 --> G[Set Headers Step1]
-    C -- Step2 --> H[Set Headers Step2]
-    C -- Step3 --> I[Set Headers Step3]
-    C -- Unknown --> J[Custom Status Discarded]
-    J --> K[Log Discarded Message]
-    K --> L[Discarded Unknown End]
-    G --> M[Step 1 Process]
-    H --> N[Step 2 Process]
-    I --> O[Step 3 Process]
-    M --> P[Next Step JMS Sender]
-    N --> Q[Next Step JMS Sender]
-    O --> R[Custom Status Step3Completed]
-    R --> S[End Event]
-    P --> T[Custom Status Step1Completed]
-    T --> S
-    Q --> U[Custom Status Step2Completed]
-    U --> S
-    W[Postman HTTPS Sender] --> X[Dummy Start Process]
+    Start([Start]) --> A[Main Process]
+
+    A --> B1{Is input valid?}
+    B1 -- Yes --> C[Preprocessing]
+    B1 -- No --> Z[Reject Input]
+
+    C --> D1[Subprocess A]
+    D1 --> D2[Validate Data]
+    D2 --> D3{Data OK?}
+    D3 -- No --> Z
+    D3 -- Yes --> E[Subprocess B]
+
+    E --> F1[Transform Data]
+    E --> F2[Enrich Data]
+    F1 --> G[Merge Results]
+    F2 --> G
+
+    G --> H{Ready to Submit?}
+    H -- Yes --> I[Submit to API]
+    H -- No --> J[Wait or Retry]
+
+    I --> K([Success ✅])
+    J --> L([Manual Review 🔍])
+    Z --> X([End ❌])
 
 ```
 **Functional Summary**
