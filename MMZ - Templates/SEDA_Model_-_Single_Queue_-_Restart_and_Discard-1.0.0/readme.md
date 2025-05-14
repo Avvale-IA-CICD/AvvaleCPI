@@ -1,69 +1,66 @@
-**iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard **- iFlowVersion**: 1.0.0
+**iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[SQUEUE/Postman] --> B{Reprocess?}
-    B -- Yes --> C{Step?}
-    B -- Discard --> D[Discaded]
-    D --> E[Log Discarded Message]
-    E --> F[Discarded MaxRetries]
-    C -- Step1 --> G[Set Headers Step1]
-    C -- Step2 --> H[Set Headers Step2]
-    C -- Step3 --> I[Set Headers Step3]
-    C -- Unknown --> J[Custom Status DiscardedUnknownStep]
-    J --> K[Log Discarded Message]
-    K --> L[Discarded Unknown]
-    G --> M[Step 1]
-    H --> N[Step 2]
-    I --> O[Step 3]
-    M --> P[Next Step JMS_STEP1]
-    N --> Q[Next Step JMS_STEP2]
-    O --> R[Next Step JMS_STEP3]
-    P --> S[Custom Status Step1Completed]
-    Q --> T[Custom Status Step2Completed]
-    R --> U[Custom Status Step3Completed]
-    S --> V[RQUEUE]
-    T --> V[RQUEUE]
-    U --> V[RQUEUE]
-    style V fill:#f9f,stroke:#333,stroke-width:2px
+    A[SQUEUE/Postman] --> B(Start)
+    B --> C{Reprocess?}
+    C -- Yes --> D{Step?}
+    C -- Discard --> E[Discarded MaxRetries Custom Status]
+    E --> F[Log Discarded Message]
+    F --> G(Discarded MaxRetries End)
+    D -- Step1 --> H[Set Headers Step1]
+    D -- Step2 --> I[Set Headers Step2]
+    D -- Step3 --> J[Set Headers Step3]
+    D -- Unknown --> K[Discarded Unknown Custom Status]
+    K --> L[Log Discarded Message]
+    L --> M(Discarded Unknown End)
+    H --> N[Step 1]
+    I --> O[Step 2]
+    J --> P[Step 3]
+    N --> Q[Next Step]
+    O --> R[Next Step]
+    P --> S[Custom Status]
+    Q --> T[Custom Status]
+    R --> U[Custom Status]
+    S --> V(End)
+    T --> V
+    U --> V
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern using JMS queues. It receives messages, processes them through a series of steps (Step 1, Step 2, Step 3), and sends the messages to a receiver queue. The iFlow includes retry mechanisms with discard functionality based on maximum retries exceeded and exception handling with asynchronous logging. An HTTP endpoint to start the iFlow is also available.
+This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern using a single JMS queue for asynchronous message processing. It demonstrates how to handle message retries and discarding of messages after exceeding the maximum retry attempts, including exception handling for each step. The iFlow processes messages in three steps, each represented by a separate integration process.
 
 - **Involved systems**
     - SQUEUE
-    - Postman
     - RQUEUE
+    - Postman
 
 - **Used Adapters**
     - JMS
     - HTTPS
 
 - **Key steps**
-    1. Receive message from SQUEUE via JMS. Alternatively, receive the message from Postman via HTTP.
-    2. Set initial headers and save initial message
-    3. Route message through a series of steps (Step 1, Step 2, Step 3). Each step prepares the message and enriches it.
-    4. Each step may throw exceptions, which are handled by logging the exception asynchronously.
-    5. After each step, custom statuses are created to log the step completion.
-    6. Depending on the message header `SAPJMSRetries` and a configured `MaxRetries`, the message is either reprocessed or discarded after reaching `MaxRetries` threshold. Discarded messages are logged.
-    7. If the step is unknown, the message is also discarded and logged.
-    8. After all steps, the message is routed to the receiving queue (RQUEUE) via JMS.
+    1. Receives a message via JMS adapter from SQUEUE, or an HTTPs request from Postman.
+    2. The message is passed through an Exclusive Gateway to reprocess, or discard it if it has already been processed.
+    3. The SEDA Router determines which step is next.
+    4. In each step, there's a subprocess for exception handling where exceptions are logged.
+    5. The iFlow enriches the message with headers and properties to track the processing status.
+    6. After a final step, if the message is discarded then logging is done before the process completes.
 
 - **Message transformation**
-    - Header enrichment with Sender, Receiver, and MessageType.
-    - Message content enrichment with constant values in each step (e.g., "Step2Message").
-    - MessageProcessingLogCustomStatus creation for different stages (e.g., "Step1Completed", "RouterException").
+    - Enricher is used to set Headers and Properties, including custom status.
+    - Groovy scripts are used to log discarded messages and exceptions.
+    - Content modifiers are used to prepare the step.
 
 - **Externalized parameters list and their descriptions**
-    - `SEDA_MAIN_QUEUE`: Queue used for JMS communication between the steps and the receiver.
-    - `Number of Concurrent Processes`: Number of concurrent processes used by the JMS adapter.
-    - `Maximum Retry Interval`: Maximum interval for retries, used by JMS adapter.
-    - `Retry Interval`: Interval between retry attempts, used by JMS adapter.
-    - `MaxRetries`: Maximum number of retries before discarding the message.
-    - `Retention Threshold 4 Alerting`: Threshold before triggering alerting in JMS.
-    - `Expiration Period`: Time until messages expire in JMS.
+    - SEDA_MAIN_QUEUE: The name of the JMS queue used for message exchange between the steps.
+    - Retention Threshold 4 Alerting: Threshold for alerting based on message retention.
+    - Expiration Period: The time period after which messages expire.
+    - Number of Concurrent Processes: The number of concurrent processes that can process messages from the JMS queue.
+    - Maximum Retry Interval: The maximum interval between retry attempts.
+    - Retry Interval: The interval between retry attempts.
+    - MaxRetries: The maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
 Yes
@@ -72,7 +69,9 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-Groovy_Logging_Scripts
+    - Log_Discarded_Message.groovy
+    - Log_Exception_Async.groovy
+    - script1.groovy
 
-- **Cloud Integration Process Direct ComponentType Dependency**
+- **ProcessDirect ComponentType Dependency**
 Not Found
