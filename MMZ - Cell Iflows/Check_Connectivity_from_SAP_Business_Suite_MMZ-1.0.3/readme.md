@@ -1,50 +1,51 @@
-**iFlowId**: Check_Connectivity_from_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0
+**iFlowId:** Check_Connectivity_from_SAP_Business_Suite_MMZ - **iFlowVersion:** 1.0
 
 **Mermaid Diagram**
+- **Visual representation of the flow**
+
 ```mermaid
 graph LR
-    ERP[ERP] --> StartEvent[Start Event]
-    StartEvent --> Mapping[Mapping: ERP_COD_ConnectivityCheck]
-    Mapping --> EndEvent[End Event]
-    EndEvent --> COD[COD]
+    ERP[ERP System] --> StartEvent
+    StartEvent[Start] --> Mapping
+    Mapping[Mapping] --> EndEvent
+    EndEvent[End] --> COD[COD System]
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer (C4C) via SAP Integration Suite (HCI).
+  This iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer via SAP Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - ERP: SOAP Adapter, HTTP Endpoint
-    - COD: SOAP Adapter, HTTP Endpoint
+  - ERP (Sender): SOAP Adapter (HTTP)
+  - COD (Receiver): SOAP Adapter (HTTP)
 
 - **Key steps**
-    1.  The iFlow starts with a message from ERP system, triggered by a SOAP call.
-    2.  The message is passed to a mapping step.
-    3.  The mapping "ERP_COD_ConnectivityCheck" transforms the message.
-    4.  The message is sent to the COD system via SOAP.
+  1. The iFlow starts with a message from the ERP system.
+  2. An Operation Mapping transforms the message.
+  3. The message is sent to the COD system.
 
 - **Message transformation**
-    - Mapping: ERP_COD_ConnectivityCheck
+  - ERP_COD_ConnectivityCheck.opmap (Operation Mapping)
 
 - **Externalized parameters list and their descriptions**
-    - ERP_enableBasicAuthentication_8: Enables basic authentication for the ERP sender adapter.
-    - subject: Subject for ERP.
-    - issuer: Issuer for ERP.
-    - ERP_address_1: Address of the ERP SOAP endpoint.
-    - ERP_wsdlURL_0: WSDL URL of the ERP SOAP service.
-    - Host: Hostname for the COD SOAP endpoint URL.
-    - Port: Port for the COD SOAP endpoint URL.
-    - COD_enableBasicAuthentication_6: Enables basic authentication for the COD receiver adapter.
-    - artifactname: Credential name for COD.
-    - pr-key-alias: Private key alias for COD.
+  - ERP_enableBasicAuthentication_8: Enables basic authentication for the ERP sender adapter.
+  - subject: Subject for ERP sender.
+  - issuer: Issuer for ERP sender.
+  - ERP_address_1: Address of the ERP system.
+  - ERP_wsdlURL_0: WSDL URL of the ERP system.
+  - Host: Hostname for the COD receiver.
+  - Port: Port for the COD receiver.
+  - COD_enableBasicAuthentication_6: Enables basic authentication for the COD receiver adapter.
+  - artifactname: Credential name for the COD receiver adapter.
+  - pr-key-alias: Private key alias for the COD receiver adapter.
 
 - **DataStore / JMS Dependency**
-Not Found
+  Not Found
 
 - **Cloud Connector Dependency**
-Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-Not Found
+  Not Found
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+  Not Found
