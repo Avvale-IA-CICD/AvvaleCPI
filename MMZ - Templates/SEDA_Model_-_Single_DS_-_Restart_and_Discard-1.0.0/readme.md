@@ -3,70 +3,73 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[Start:HTTPS or DataStoreConsumer] --> B{Reprocess?}
-    B -- Yes --> C{Step?}
-    B -- Discard --> D[Discaded]
-    C -- Step1 --> E[Set Headers: Step1]
-    C -- Step2 --> F[Set Headers: Step2]
-    C -- Step3 --> G[Set Headers: Step3]
-    C -- Unknown --> H[Custom Status: UnknownStep]
-    D --> I[Log Discarded Message]
-    E --> J[Step 1]
-    F --> K[Step 2]
-    G --> L[Step 3]
-    J --> M[Step2:DB Storage]
-    K --> N[Step3:DB Storage]
-    L --> O[Step3Process]
-    M --> P[Custom Status: Step1Completed]
-    N --> Q[Custom Status: Step2Completed]
-    O --> R[Custom Status: Step3Completed]
-    I --> S[Discarded MaxRetries]
-    P --> T[End]
-    Q --> T
-    R --> T
-    H --> T
-    S --> T
-    
+    A[Postman] --> B(Dummy Start)
+    B --> C{Set Headers}
+    C --> D[Step1 - DataStore]
+    D --> E{Custom Status}
+    E --> F(SEDA Router)
+    F --> G{Reprocess ?}
+    G -- Yes --> H{Step ?}
+    H -- Step1 --> I{Set Headers}
+    H -- Step2 --> J{Set Headers}
+    H -- Step 3 --> K{Set Headers}
+    H -- Unknown --> L{Custom Status}
+    I --> M[Step 1]
+    J --> N[Step 2]
+    K --> O[Step 3]
+    M --> P[Step2 - DataStore]
+    N --> Q[Step3 - DataStore]
+    O --> R{Custom Status}
+    P --> S{Custom Status}
+    Q --> T{Custom Status}
+    G -- Discard --> U{Custom Status}
+    U --> V[Log Discarded Message]
+    V --> W(Discarded MaxRetries)
+    W --> X[End]
+    S --> X
+    T --> X
+    L --> X
+    X --> Y[End]
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow processes messages retrieved from a Data Store, routes them through different steps (Step 1, Step 2, Step 3) based on the 'Step' header, and stores the message in the Data Store after each step. It includes retry logic, discarding messages that exceed the maximum retry attempts, and logging exceptions. Two different start events are available (Postman, DataStoreConsumer)
+This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern to process messages asynchronously, retrieving them from a Data Store, routing them through multiple processing steps (Step 1, Step 2, Step 3) and handling exception using dedicated subprocesses. The flow includes retry mechanism, and the possibility to discard messages after a specific number of retries.
 
 - **Involved systems**
-    - DS (Data Store)
     - Postman
+    - DS (DataStore)
 
 - **Used Adapters**
     - HTTPS
-    - DataStoreConsumer
+    - DataStore Consumer
 
 - **Key steps**
- 1. The iFlow starts either via an HTTPS endpoint (triggered by Postman) or by consuming messages from a DataStore.
- 2.  If started via HTTPS, sets initial headers.
- 3. If started by DataStore, it checks if a re-processing is required and has not exceed MaxRetries
- 4. Messages are routed based on the 'Step' header value (Step1, Step2, Step3, or Unknown).
- 5. Each step (Step 1, Step 2, Step 3) prepares the message, stores it in the Data Store.
- 6.  Custom statuses are added to the message processing log after each step.
- 7. If MaxRetries is exceed, the message is discarded with custom discarded message in the log.
- 8. Exceptions are caught and logged asynchronously.
+ 1. Receives a message via HTTPS.
+ 2. Saves the message to a Data Store.
+ 3. Consumes the message from the Data Store.
+ 4. Routes the message based on the `Step` header value ("Step1", "Step2", "Step3").
+ 5. Executes corresponding steps (Step 1, Step 2, Step 3) based on the `Step` header.
+ 6. Each step updates message processing log custom status.
+ 7. Saves the status (Step1, Step2, Step3) with separate Data Store operations.
+ 8. Implements a retry mechanism. If the number of retries exceeds a predefined limit (`MaxRetries`), the message is discarded.
+ 9. Logs Async Exceptions.
+10. Sets Headers with Enrichers.
 
 - **Message transformation**
-    - Setting headers (SAP_Sender, SAP_Receiver, SAP_MessageType, Step).
-    - Adding custom statuses to the message processing log.
-    - Enriching messages with constant values.
-    - Groovy scripts for logging exceptions and discarded messages.
-
+    - Set Headers (Enricher): Adds `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`, and `Step` headers.
+    - Prepare Step x (Enricher): Sets the Step headers, and wrap content as base64.
+    - Custom Status (Enricher): Sets custom status messages in the `SAP_MessageProcessingLogCustomStatus` header.
 - **Externalized parameters list and their descriptions**
-    - RoleName:  Role for HTTPS sender authentication.
-    - Maximum Retry Interval: Maximum retry interval for DataStore consumer.
-    - Exponential Backoff: Exponential backoff flag for DataStore consumer.
-    - Data Store Name: Name of the Data Store.
-    - Poll Interval: Poll interval for DataStore consumer.
-    - Retry Interval: Retry interval for DataStore consumer.
-    - Lock Timeout: Lock timeout for DataStore consumer.
-    - Retention Threshold 4 Alerting: Retention threshold for DataStore alert.
-    - Expiration Period: Expiration period for stored messages.
-    - MaxRetries: Maximum retries allowed
+    - `RoleName`: Role required for accessing the HTTPS endpoint.
+    - `Maximum Retry Interval`: Maximum retry interval for DataStore Consumer
+    - `Exponential Backoff`: Exponential Backoff parameter for DataStore Consumer
+    - `Data Store Name`: Name of the Data Store used for persistence.
+    - `Poll Interval`: Poll Interval parameter for DataStore Consumer
+    - `Retry Interval`: Retry Interval parameter for DataStore Consumer
+    - `Lock Timeout`: Lock Timeout parameter for DataStore Consumer
+    - `Retention Threshold 4 Alerting`: Retention Threshold for Alerting parameter for DB storage.
+    - `Expiration Period`: Expiration Period for DB storage.
+    - `MaxRetries`: Maximum number of retries.
 
 - **DataStore / JMS Dependency**
 Yes
@@ -75,12 +78,10 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
+List of scripts:
     - Log_Discarded_Message.groovy
     - Log_Exception_Async.groovy
     - script1.groovy
 
-- **Cloud Integration Process Direct ComponentType Dependency**
-    - Process_40 (Step 2)
-    - Process_44 (Step 3)
-    - Process_36 (Step 1)
-    - Process_12079804 (Log Async Exception)
+- **ProcessDirect ComponentType Dependency**
+Not Found
