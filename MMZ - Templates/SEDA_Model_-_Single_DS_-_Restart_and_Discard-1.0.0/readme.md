@@ -39,13 +39,13 @@ This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) pattern using 
     - DataStore Consumer
 
 - **Key steps**
-    1. Receive message from HTTPS or DataStore. The HTTPS receiver is Dummy start, and DataStore consumer is the main entry point.
-    2. Set headers for initial processing (Dummy Start only).
-    3. Store the message in DataStore (Step1, Step2, Step3).
-    4. Route the message through steps Step1, Step2, Step3 sequentially, retrying if necessary.
-    5. Discard messages exceeding the maximum retry count, logging the discarded message.
-    6. Log exceptions that occur in any step asynchronously.
-    7. Set Custom Status on success and exception for monitoring.
+    1.  Receive message from HTTPS or DataStore. The HTTPS receiver is Dummy start, and DataStore consumer is the main entry point.
+    2.  Set headers for initial processing (Dummy Start only).
+    3.  Store the message in DataStore (Step1, Step2, Step3).
+    4.  Route the message through steps Step1, Step2, Step3 sequentially, retrying if necessary.
+    5.  Discard messages exceeding the maximum retry count, logging the discarded message.
+    6.  Log exceptions that occur in any step asynchronously.
+    7.  Set Custom Status on success and exception for monitoring.
 
 - **Message transformation**
     - The iFlow uses enrichers to add headers and custom status to the message.
