@@ -1,93 +1,95 @@
 **iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
+- **Visual representation of the flow**
+
 ```mermaid
 graph LR
-    subgraph "Dummy Start"
-        A[Start 6] --> B{Set Headers}
-        B --> C[Save Initial Msg]
-        C --> D{Custom Status}
-        D --> E[End 5]
+    Postman --> HTTPS_Start[HTTPS Start]
+    SQUEUE --> JMS_Start[JMS Start]
+    JMS_Start --> Reprocess{Reprocess?}
+    Reprocess -- Yes --> StepCheck{Step?}
+    Reprocess -- Discard --> DiscardMaxRetriesStatus[Discard Max Retries Status]
+    DiscardMaxRetriesStatus --> LogDiscardedMessageMaxRetries[Log Discarded Message Max Retries]
+    LogDiscardedMessageMaxRetries --> EndDiscardMaxRetries[End Discard MaxRetries]
+    StepCheck -- Step1 --> SetHeadersStep1[Set Headers Step 1]
+    SetHeadersStep1 --> Step1[Step 1]
+    Step1 --> JMS_Step1[JMS Step1]
+    JMS_Step1 --> CustomStatusStep1[Custom Status Step1]
+    CustomStatusStep1 --> End
+    StepCheck -- Step2 --> SetHeadersStep2[Set Headers Step 2]
+    SetHeadersStep2 --> Step2[Step 2]
+    Step2 --> JMS_Step2[JMS Step2]
+    JMS_Step2 --> CustomStatusStep2[Custom Status Step2]
+    CustomStatusStep2 --> End
+    StepCheck -- Step3 --> SetHeadersStep3[Set Headers Step 3]
+    SetHeadersStep3 --> Step3[Step 3]
+    Step3 --> JMS_Step3[JMS Step3]
+    JMS_Step3 --> CustomStatusStep3[Custom Status Step3]
+    CustomStatusStep3 --> End
+    StepCheck -- Unknown --> DiscardUnknown[Discard Unknown]
+    DiscardUnknown --> LogDiscardedMessageUnknown[Log Discarded Message Unknown]
+    LogDiscardedMessageUnknown --> EndDiscardedUnknown[End Discarded Unknown]
+    subgraph Step1
+        StartStep1[Start Step 1] --> PrepareStep2[Prepare Step 2]
+        PrepareStep2 --> EndStep1[End Step 1]
+        PrepareStep2 -.-> LogAsyncExceptionStep1((Log Async Exception))
+        StartError1[Error Start 1] --> CustomStatusError1[Custom Status Error 1]
+        CustomStatusError1 --> LogAsyncExceptionStep1
+        LogAsyncExceptionStep1 --> EndError1[Error End 1]
     end
-
-    subgraph "SEDA Router"
-        F[Start] --> G{Reprocess?}
-        G -- Discard --> H[Discaded]
-        H --> I[Log Discarded Message]
-        G -- Yes --> J{Step?}
-        J -- Step1 --> K{Set Headers}
-        J -- Step 2 --> L{Set Headers}
-        J -- Step 3 --> M{Set Headers}
-        J -- Unknown --> N{Custom Status}
-        N --> O[Log Discarded Message]
-        K --> P[Step 1]
-        L --> Q[Step 2]
-        M --> R[Step 3]
-        O --> S[Discarded Unknown]
-        I --> T[Discarded MaxRetries]
-        P --> U{Next Step}
-        Q --> V{Next Step}
-        R --> W{Custom Status}
-        W --> X[End]
-        U --> Y{Custom Status}
-        V --> Z{Custom Status}
-        Y --> X
-        Z --> X
-
-        S --> O
-        T --> I
+    subgraph Step2
+        StartStep2[Start Step 2] --> PrepareStep3[Prepare Step 3]
+        PrepareStep3 --> EndStep2[End Step 2]
+        PrepareStep3 -.-> LogAsyncExceptionStep2((Log Async Exception))
+        StartError2[Error Start 2] --> CustomStatusError2[Custom Status Error 2]
+        CustomStatusError2 --> LogAsyncExceptionStep2
+        LogAsyncExceptionStep2 --> EndError2[Error End 2]
     end
-
-    subgraph "Step 1"
-        AA[Start 2] --> BB{Prepare Step 2}
-        BB --> CC[End 2]
+    subgraph Step3
+        StartStep3[Start Step 3] --> TestThrowException[Test Throw Exception]
+        TestThrowException --> EndStep3[End Step 3]
+        TestThrowException -.-> LogAsyncExceptionStep3((Log Async Exception))
+        StartError3[Error Start 3] --> CustomStatusError3[Custom Status Error 3]
+        CustomStatusError3 --> LogAsyncExceptionStep3
+        LogAsyncExceptionStep3 --> EndError3[Error End 3]
     end
-    subgraph "Step 2"
-        DD[Start 3] --> EE{Prepare Step 3}
-        EE --> FF[End 3]
-    end
-        subgraph "Step 3"
-        GG[Start 4] --> HH{Test Throw Exception}
-        HH --> II[End 4]
-    end
+    HTTPS_Start --> SaveInitialMsg[Save Initial Msg]
+    SaveInitialMsg --> SetHeadersDummyStart[Set Headers Dummy Start]
+    SetHeadersDummyStart --> EndDummyStart[End Dummy Start]
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) pattern using a single JMS queue. It receives messages, processes them in multiple steps (Step 1, Step 2, Step 3), and handles exceptions during each step by logging them. The iFlow also includes retry logic with a maximum number of retries and discards messages that exceed this limit or encounter unknown steps.
+This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern using a single JMS queue. It receives messages, processes them in multiple steps (Step 1, Step 2, Step 3), and handles exceptions by logging them and potentially discarding messages after a certain number of retries. The iFlow also logs custom status messages at various points in the flow.
 
 - **Involved systems**
-    - SQUEUE
-    - Postman
-    - RQUEUE
+    - SQUEUE (Source Queue)
+    - RQUEUE (Receiver Queue)
+    - Postman (HTTP Sender)
 
 - **Used Adapters**
     - JMS
     - HTTPS
 
 - **Key steps**
-    1.  Receive a message via HTTPS (from Postman) or JMS (from SQUEUE).
-    2.  Save the initial message and set headers.
-    3.  Route the message to Step 1, Step 2 or Step 3, depending on the `Step` property.
-    4.  Each step (Step 1, Step 2, Step 3) prepares the message for the next step by setting properties and headers.
-    5.  If an exception occurs in any of the steps, log the exception asynchronously.
-    6.  If the message has been reprocessed more than the maximum retries, discard it and log discarded message.
-    7.  If message `Step` value is unknown, discard the message and log discarded message.
+    1.  Receive message from SQUEUE via JMS adapter.
+    2.  Determine if the message needs to be reprocessed or discarded based on the number of retries.
+    3.  Route the message to Step 1, Step 2, or Step 3 based on the "Step" property.
+    4.  Each step (Step 1, Step 2, Step 3) prepares the message, executes its specific logic, and sets a custom status.
+    5.  If an exception occurs in any step, log the exception and set a custom status. Discard the message if it fails repeatedly, log discarded messages and register corresponding custom statuses.
 
 - **Message transformation**
-    - Setting headers (SAP_Sender, SAP_Receiver, SAP_MessageType) using enrichers with constant values.
-    - Setting custom status messages (SAP_MessageProcessingLogCustomStatus) using enrichers.
-    - Preparing message content for subsequent steps within each "Prepare Step" call activity.
-    - Logging discarded messages using Groovy scripts.
-    - Logging exceptions using Groovy scripts.
+    - Enricher: Used to set headers (SAP_Sender, SAP_Receiver, SAP_MessageType, SAP_MessageProcessingLogCustomStatus) and properties (Step) at various stages of the flow.
+    - Groovy Scripts: Used to log exceptions and discarded messages with a custom script.
 
 - **Externalized parameters list and their descriptions**
-    - `SEDA_MAIN_QUEUE`: The name of the JMS queue used for message processing.
-    - `Retention Threshold 4 Alerting`: Threshold for alerting on message retention.
-    - `Expiration Period`: The time after which messages expire.
-    - `Number of Concurrent Processes`: Number of concurrent processes for JMS adapter.
-    - `Maximum Retry Interval`: Maximum retry interval for JMS adapter.
-    - `Retry Interval`: Retry interval for JMS adapter.
-    - `MaxRetries`: Maximum number of retries before discarding a message.
+    - SEDA_MAIN_QUEUE: Name of the JMS queue used for asynchronous processing.
+    - Number of Concurrent Processes: Number of concurrent processes used by the JMS adapter.
+    - Maximum Retry Interval: Maximum retry interval for the JMS adapter.
+    - Expiration Period: Expiration period for JMS messages.
+    - Retention Threshold 4 Alerting: Retention threshold for JMS alerting.
+    - Retry Interval: Retry interval for the JMS adapter.
+    - MaxRetries: Maximum retries before discarding the message.
 
 - **DataStore / JMS Dependency**
 Yes
