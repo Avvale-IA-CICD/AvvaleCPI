@@ -3,78 +3,82 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[Postman/DataStore] --> B{Reprocess?}
-    B -- Yes --> C{Step?}
-    B -- Discard --> D[Discaded]
-    D --> E[Log Discarded Message]
-    E --> F[Discarded MaxRetries]
-    C -- Step1 --> G[Set Headers - Step1]
-    C -- Step2 --> H[Set Headers - Step2]
-    C -- Step 3 --> I[Set Headers - Step3]
-    C -- Unknown --> J[Custom Status - UnknownStep]
-	J --> K[End]
-    G --> L[Step 1]
-    H --> M[Step 2]
-    I --> N[Step 3]
-    L --> O[Step2]
-    M --> P[Step3]
-    N --> Q[Step3]
-    O --> R[Custom Status - Step1Completed]
-    P --> S[Custom Status - Step2Completed]
-    Q --> T[Custom Status - Step3Completed]
-	R --> K[End]
-	S --> K[End]
-	T --> K[End]
-    subgraph Step1
-        L --> Prep2[Prepare Step 2]
-        Prep2 --> End1[End Step 1]
-    end
-    subgraph Step2
-        M --> Store3[Step3]
-        Store3 --> End2[End Step 2]
-    end
-    subgraph Step3
-        N --> testTrowExcp[Test Throw Exception]
-        testTrowExcp --> End3[End Step 3]
-    end
-	style K fill:#f9f,stroke:#333,stroke-width:2px
+    A[Postman] --> B(Dummy Start)
+    B --> C{Set Headers - Step0}
+    C --> D[Step1 - Data Store Put]
+    D --> E{Custom Status - Step0 Completed}
+    E --> F(SEDA Router)
+    F --> G{Reprocess?}
+    G -- Yes --> H{Step?}
+    G -- Discard --> I[Discaded - Max Retries]
+    I --> J[Log Discarded Message]
+    J --> K(Discarded MaxRetries)
+    H -- Step1 --> L{Set Headers - Step1 to Step2}
+    H -- Step2 --> M{Set Headers - Step2 to Step3}
+    H -- Step 3 --> N{Set Headers - Step3 to End}
+    H -- Unknown --> O{Custom Status - Unknown Step}
+    O --> P(End)
+    L --> Q[Step 1]
+    M --> R[Step 2]
+    N --> S[Step 3]
+    Q --> T[Step1 - Data Store Put]
+    R --> U[Step2 - Data Store Put]
+    S --> V[Step3 - Data Store Put]
+    T --> W{Custom Status - Step1 Completed}
+    U --> X{Custom Status - Step2 Completed}
+    V --> Y{Custom Status - Step3 Completed}
+    W --> P
+    X --> P
+    Y --> P
+    K --> P
+    style G fill:#f9f,stroke:#333,stroke-width:2px
+    style H fill:#f9f,stroke:#333,stroke-width:2px
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-  This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model with a single Data Store, restart, and discard functionality. It receives messages either via HTTPS or DataStore. The core logic routes messages through three steps, storing message data in the Data Store and logging async exceptions, discarding messages that exceed maximum retry attempts.
+The iFlow processes messages asynchronously, persisting them to a Data Store and retrying in case of failures. It involves multiple steps, each potentially throwing exceptions, with a mechanism for logging these exceptions. Messages can be discarded after a certain number of retries.
 
 - **Involved systems**
   - Postman
-  - DS (DataStore)
+  - Data Store (DS)
 
 - **Used Adapters**
   - HTTPS (Sender)
-  - DataStore Consumer (Sender)
+  - DataStoreConsumer (Sender)
 
 - **Key steps**
-  1. Receive message via HTTPS or DataStore Consumer.
-  2. Determine if the message should be reprocessed or discarded based on retry count.
-  3. Route message to Step1, Step2 or Step3 based on message header "Step" value
-  4. Store message in data store (Step1, Step2, Step3).
-  5. Log any exceptions during steps in the Log Async Exception process.
-  6. Discard message if maximum retry count is reached by logging discaded message.
+ 1. Receive message via HTTPS from Postman (Dummy Start).
+ 2. Set initial headers, including sender, receiver, and message type (Set Headers in Dummy Start).
+ 3. Persist the message to the Data Store (Step1 in Dummy Start).
+ 4. Retrieve message from Data Store (Start in SEDA Router).
+ 5. Determine if message should be discarded, based on number of retries (ExclusiveGateway_9098 in SEDA Router). If `SAP_DataStoreRetries` exceeds `MaxRetries`, discard message.
+ 6. Based on value of the header `Step`, route the message for processing (ExclusiveGateway_12 in SEDA Router).
+ 7. Prepare and execute "Step 1", prepare headers and set `Step=Step2` (Integration Process Step 1 and associated subprocesses, called by SEDA Router).
+ 8. Prepare and execute "Step 2", prepare headers and set `Step=Step3` (Integration Process Step 2 and associated subprocesses, called by SEDA Router).
+ 9. Prepare and execute "Step 3", prepare headers and set `Step=EndMessage` (Integration Process Step 3 and associated subprocesses, called by SEDA Router).
+ 10. Log Async Exception (Log Async Exception Process, called in exception subprocesses in Integration Process Step 1, 2 and 3).
+ 11. Discard Message (Log Discarded Message and Discarded MaxRetries End Event in SEDA Router).
+ 12. Update custom status messages throughout the flow.
 
 - **Message transformation**
-  - Setting headers in "Set Headers" steps.
-  - Adding custom status messages in "Custom Status" steps.
-  - Enriching message content in "Prepare Step" activities within the Step subprocesses.
+  - Setting Headers: Several "Set Headers" steps enrich the message with sender, receiver, message type, and step information.
+  - Custom Status: Several "Custom Status" steps enrich the message with processing status information.
+  - Groovy Script: Log discarded message to persistent storage
 
 - **Externalized parameters list and their descriptions**
-  - RoleName: Role required to access the HTTPS endpoint.
-  - Maximum Retry Interval: Maximum interval for retries.
-  - Exponential Backoff: Flag to enable exponential backoff for retries.
-  - Data Store Name: Name of the data store used for message persistence.
-  - Poll Interval: Interval for polling the Data Store.
-  - Retry Interval: Interval for retrying failed operations.
-  - Lock Timeout: Timeout for file lock operations.
-  - Retention Threshold 4 Alerting: Threshold for retention period alerting.
-  - Expiration Period: Period after which messages expire.
+  - RoleName: User role for HTTPS sender authentication.
+  - Maximum Retry Interval: Maximum interval between retries for DataStoreConsumer.
+  - Exponential Backoff: Flag to enable exponential backoff for DataStoreConsumer retries.
+  - Data Store Name: Name of the Data Store used for persistence.
+  - Poll Interval: Interval for polling the Data Store for new messages.
+  - Retry Interval: Interval between retries for DataStoreConsumer.
+  - Lock Timeout: Timeout for file lock in DataStoreConsumer.
+  - Retention Threshold 4 Alerting: Threshold for alerting on data retention.
+  - Expiration Period: Period after which data expires.
   - MaxRetries: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
-  Yes
+Yes
+
+- **Cloud Connector Dependency**
+Not Found
