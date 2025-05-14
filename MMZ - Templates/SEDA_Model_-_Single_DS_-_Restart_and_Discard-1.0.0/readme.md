@@ -1,4 +1,5 @@
-**iFlowId**: SEDA_Model_-_Single_DS_-_Restart_and_Discard - **iFlowVersion**: 1.0.0```mermaid
+**iFlowId**: SEDA_Model_-_Single_DS_-_Restart_and_Discard - **iFlowVersion**: 1.0.0
+```mermaid
 graph LR
     A[Postman] --> B(Dummy Start)
     B --> C{Set Headers}
