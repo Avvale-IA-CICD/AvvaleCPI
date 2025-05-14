@@ -1,97 +1,79 @@
-**iFlowId:** SEDA_Model_-_Single_Queue_-_Restart_and_Discard **- iFlowVersion:** 1.0.0
+**iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
-- **Visual representation of the flow**
 ```mermaid
 graph LR
-    A[Postman/SQUEUE] --> B{Reprocess?};
-    B -- Yes --> C{Step?};
-    B -- Discard --> K[Discarded - Log Message];
-    K --> L[End - Discarded MaxRetries];
-    C -- Step1 --> D[Step 1 - Set Headers];
-    C -- Step2 --> E[Step 2 - Set Headers];
-    C -- Step3 --> F[Step 3 - Set Headers];
-    C -- Unknown --> G[Discarded - Custom Status];
-    G --> H[Discarded - Log Message];
-    H --> I[End - Discarded Unknown];
-    D --> J[Step 1];
-    E --> M[Step 2];
-    F --> N[Step 3];
-    J --> O[Next Step - JMS];
-    M --> P[Next Step - JMS];
-    N --> Q[Next Step - JMS];
-    O --> R[Custom Status - Step1Completed];
-    P --> S[Custom Status - Step2Completed];
-    Q --> T[Custom Status - Step3Completed];
-    R --> Z[End];
-    S --> Z;
-    T --> Z;
-    
-    subgraph "Exception Handling - Steps 1,2,3, Router"
-    ZZ[Error Start Event] --> XXX[Custom Status - StepXException];
-    XXX --> YYY[Log Async Exception];
-    YYY --> ZZZ[Error End Event];
-    end
-    
-    style A fill:#f9f,stroke:#333,stroke-width:2px
-    style B fill:#ccf,stroke:#333,stroke-width:2px
-    style C fill:#ccf,stroke:#333,stroke-width:2px
-    style D fill:#fff,stroke:#333,stroke-width:2px
-    style E fill:#fff,stroke:#333,stroke-width:2px
-    style F fill:#fff,stroke:#333,stroke-width:2px
-    style G fill:#fff,stroke:#333,stroke-width:2px
-    style H fill:#fff,stroke:#333,stroke-width:2px
-    style I fill:#fff,stroke:#333,stroke-width:2px
-    style J fill:#fff,stroke:#333,stroke-width:2px
-    style K fill:#fff,stroke:#333,stroke-width:2px
-    style L fill:#fff,stroke:#333,stroke-width:2px
-    style M fill:#fff,stroke:#333,stroke-width:2px
-    style N fill:#fff,stroke:#333,stroke-width:2px
-    style O fill:#fff,stroke:#333,stroke-width:2px
-    style P fill:#fff,stroke:#333,stroke-width:2px
-    style Q fill:#fff,stroke:#333,stroke-width:2px
-    style R fill:#fff,stroke:#333,stroke-width:2px
-    style S fill:#fff,stroke:#333,stroke-width:2px
-    style T fill:#fff,stroke:#333,stroke-width:2px
-    style Z fill:#fff,stroke:#333,stroke-width:2px
+    A[Postman] --> B(HTTPS Sender);
+    B --> C{Dummy Start Process};
+    C --> D(JMS Receiver SQUEUE);
+    D --> E{SEDA Router Process};
+    E --> F{Reprocess?};
+    F -- Yes --> G{Step?};
+    G -- Step1 --> H{Set Headers Step1};
+    G -- Step2 --> I{Set Headers Step2};
+    G -- Step3 --> J{Set Headers Step3};
+    G -- Unknown --> K{Custom Status Discarded};
+    K --> L[Log Discarded Message];
+    L --> M(Discarded Unknown);
+    H --> N{Step 1 Process};
+    I --> O{Step 2 Process};
+    J --> P{Step 3 Process};
+    N --> Q(JMS Sender RQUEUE);
+    O --> R(JMS Sender RQUEUE);
+    P --> S(Custom Status Step3Completed);
+    S --> T(End Message Event);
+    T --> U(End);
+    Q --> V(Custom Status Step1Completed);
+    V --> W(End);
+    R --> X(Custom Status Step2Completed);
+    X --> Y(End);
+    F -- Discard --> Z{Discaded};
+    Z --> AA[Log Discarded Message];
+    AA --> BB(Discarded MaxRetries);
+    BB --> U
+    style B fill:#f9f,stroke:#333,stroke-width:2px
+    style D fill:#f9f,stroke:#333,stroke-width:2px
+    style Q fill:#f9f,stroke:#333,stroke-width:2px
+    style R fill:#f9f,stroke:#333,stroke-width:2px
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern with a single JMS queue. It receives a message, processes it through multiple steps (Step 1, Step 2, Step 3), and handles exceptions by logging them. The iFlow also incorporates retry and discard mechanisms for messages that fail processing. The flow can be triggered via HTTPS, putting a message to a JMS queue (SQUEUE).
+This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model using a single JMS queue with restart and discard capabilities. It receives messages, processes them in a series of steps, and handles exceptions by logging them. It also includes logic for retries and discarding messages after a maximum number of retries. It's initiated by an HTTPs request, which sends the payload to the JMS Queue.
 
 - **Involved systems**
+    - Postman
     - SQUEUE
     - RQUEUE
-    - Postman
 
 - **Used Adapters**
-    - JMS
+    - JMS (Sender and Receiver)
     - HTTPS
 
 - **Key steps**
- 1. Receive a message from the SQUEUE via JMS.
- 2. Determine if the message needs to be reprocessed based on retry attempts. If max retries exceeded, discard the message.
- 3. Route the message based on the "Step" property in the message.
- 4. Execute "Step 1," "Step 2," or "Step 3" local integration processes. These steps enrich the message in the flow.
- 5. After each step log that the step is completed.
- 6. Send the message to RQUEUE via JMS after steps 1, 2, and 3 for the next step.
- 7. Handle exceptions in each step by logging them to processing log.
- 8. If the step is "Unknown," log and discard the message.
- 9. A dummy start process exists to start the process via HTTPS/JMS.
+
+1.  Receive message via HTTPS Adapter from Postman.
+2.  "Dummy Start" process sets headers and saves the initial message to a JMS queue.
+3.  The "SEDA Router" process receives the message from the JMS queue.
+4.  The "SEDA Router" process checks a `Step` property to determine which step to execute. If 'Step1', 'Step2' or 'Step3', the corresponding call activity is executed. If not found the message is discarded.
+5.  Each "Step" process updates a custom status in the message processing log.
+6.  After completing a step, "Next Step" service task sends the message back to the JMS queue for the next step.
+7.  If a step throws an exception, the `Log Async Exception` process logs the exception.
+8.  The iFlow checks the `SAPJMSRetries` header. If the number of retries exceeds a configured maximum, the message is discarded.
 
 - **Message transformation**
-    - Header enrichment to set `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`, and `SAP_MessageProcessingLogCustomStatus` at various stages.
-    - Content enrichment to prepare messages for subsequent steps.
-    - Constant assignments within Enrichers.
+
+    -  Set headers and properties using Enrichers at multiple steps.
+    -  Groovy scripts used for logging messages and exceptions.
 
 - **Externalized parameters list and their descriptions**
-    - `SEDA_MAIN_QUEUE`: The name of the JMS queue used for message exchange between different steps.
-    - `Number of Concurrent Processes`: Specifies the number of concurrent processes for the JMS sender adapter.
-    - `Maximum Retry Interval`: The maximum time interval for retrying failed message processing.
-    - `Retry Interval`: The time interval for retrying failed message processing.
-    - `Expiration Period`: The time after which JMS messages expire.
-    - `Retention Threshold 4 Alerting`: Threshold for triggering alerts based on message retention.
-    - `MaxRetries`: maximum number of retries.
+
+    - `SEDA_MAIN_QUEUE`: Name of the JMS queue used for message exchange between steps.
+    - `Number of Concurrent Processes`: Number of concurrent processes.
+    - `Maximum Retry Interval`: Maximum retry interval.
+    - `Retention Threshold 4 Alerting`: Alerting threshold for message retention.
+    - `Expiration Period`: Message Expiration Period.
+    - `Retry Interval`: JMS Retry Interval.
+    - `MaxRetries`: The maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
 Yes
@@ -100,6 +82,7 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-    - Log_Discarded_Message.groovy
-    - Log_Exception_Async.groovy
-    - script1.groovy
+Log_Exception_Async.groovy, Log_Discarded_Message.groovy and script1.groovy
+
+- **Process Direct Dependency**
+Process_44, Process_40, Process_36 and Process_12079777
