@@ -3,53 +3,53 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[COD] --> B(Start Event)
+    A[COD] --> B(StartEvent)
     B --> C{Mapping}
-    C --> D(End Event)
+    C --> D(EndEvent)
     D --> E[ERP]
     style A fill:#f9f,stroke:#333,stroke-width:2px
-    style E fill:#ccf,stroke:#333,stroke-width:2px
+    style E fill:#f9f,stroke:#333,stroke-width:2px
 ```
 **Functional Summary**
-**Brief description of the iFlow**
-This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite (HCI).
+- **Brief description of the iFlow**
+This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
 
-**Involved systems with Adapters Type and Endpoint Type**
-- COD: SOAP Adapter, Endpoint Sender
-- ERP: SOAP Adapter, Endpoint Receiver
+- **Involved systems with Adapters Type and Endpoint Type**
+    - COD: SOAP Adapter, EndpointSender
+    - ERP: SOAP Adapter, EndpointRecevier
 
-**Key steps**
-1.  The iFlow starts with a message received from the COD system via SOAP.
-2.  A mapping step transforms the message using the `COD_ERP_CheckEnd2EndConnectivity.opmap` mapping.
-3.  The transformed message is sent to the ERP system via SOAP.
+- **Key steps**
+    1.  The iFlow starts with a message from COD via SOAP.
+    2.  A mapping step `COD_ERP_CheckEnd2EndConnectivity` transforms the message.
+    3.  The transformed message is sent to ERP via SOAP.
 
-**Message transformation**
--   The iFlow uses a mapping named `COD_ERP_CheckEnd2EndConnectivity` located at `dir://opmap/src/main/resources/mapping/COD_ERP_CheckEnd2EndConnectivity.opmap`.
+- **Message transformation**
+    - The iFlow uses the `COD_ERP_CheckEnd2EndConnectivity.opmap` mapping to transform the message between COD and ERP.
 
-**Externalized parameters list and their descriptions**
--   `COD_enableBasicAuthentication_3`: Enables basic authentication for the COD sender adapter.
--   `subject`: Subject for COD sender.
--   `issuer`: Issuer for COD sender.
--   `COD_address_2`: Address of the COD endpoint.
--   `COD_wsdlURL_1`: WSDL URL of the COD endpoint.
--   `Protocol-Hostname-Port`: Protocol, hostname, and port of the ERP endpoint.
--   `Client`: Client for the ERP endpoint.
--   `ERP_proxyType_4`: Proxy type for the ERP receiver adapter.
--   `location-id`: Location ID for the ERP receiver adapter.
--   `ERP_authentication_5`: Authentication method for the ERP receiver adapter.
--   `artifactname`: Credential name for the ERP receiver adapter.
--   `ERP_allowChunking_3`: Allows chunking for the ERP receiver adapter.
--   `ERP_cleanupHeaders_2`: Cleans up headers for the ERP receiver adapter.
--   `p-key-alias`: Private Key Alias.
+- **Externalized parameters list and their descriptions**
+    - COD_enableBasicAuthentication_3: Enables basic authentication for COD.
+    - subject: Subject for COD.
+    - issuer: Issuer for COD.
+    - COD_address_2: Address for COD endpoint.
+    - COD_wsdlURL_1: WSDL URL for COD endpoint.
+    - Protocol-Hostname-Port: Protocol, hostname, and port for ERP endpoint.
+    - Client: Client for ERP endpoint.
+    - ERP_proxyType_4: Proxy type for ERP endpoint.
+    - location-id: Location ID for ERP endpoint.
+    - ERP_authentication_5: Authentication method for ERP endpoint.
+    - artifactname: Credential name for ERP endpoint authentication.
+    - ERP_allowChunking_3: Allows chunking for ERP endpoint.
+    - ERP_cleanupHeaders_2: Cleans up headers for ERP endpoint.
+    - p-key-alias: Private Key Alias
 
-**DataStore / JMS Dependency**
+- **DataStore / JMS Dependency**
 Not Found
 
-**Cloud Connector Dependency**
+- **Cloud Connector Dependency**
 Not Found
 
-**Common Scripts Dependency**
+- **Common Scripts Dependency**
 Not Found
 
-**ProcessDirect ComponentType Dependency**
+- **ProcessDirect ComponentType Dependency**
 Not Found
