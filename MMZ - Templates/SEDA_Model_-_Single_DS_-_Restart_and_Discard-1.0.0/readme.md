@@ -1,66 +1,80 @@
 **iFlowId**: SEDA_Model_-_Single_DS_-_Restart_and_Discard - **iFlowVersion**: 1.0.0
+
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[HTTPS or DataStore Consumer] --> B{Reprocess?}
+    A[Postman/DataStore] --> B{Reprocess?}
     B -- Yes --> C{Step?}
-    B -- Discard --> D[Discarded Custom Status]
+    B -- Discard --> D[Discaded]
     D --> E[Log Discarded Message]
-    E --> F[Discarded MaxRetries End]
-    C -- Step1 --> G[Set Headers Step1]
-    C -- Step2 --> H[Set Headers Step2]
-    C -- Step3 --> I[Set Headers Step3]
-    C -- Unknown --> J[Unknown Step Custom Status]
-    J --> K[End]
+    E --> F[Discarded MaxRetries]
+    C -- Step1 --> G[Set Headers - Step1]
+    C -- Step2 --> H[Set Headers - Step2]
+    C -- Step 3 --> I[Set Headers - Step3]
+    C -- Unknown --> J[Custom Status - UnknownStep]
+	J --> K[End]
     G --> L[Step 1]
     H --> M[Step 2]
     I --> N[Step 3]
-    L --> O[DataStore Step2]
-    O --> P[Custom Status Step1]
-    M --> Q[DataStore Step3]
-    Q --> R[Custom Status Step2]
-    N --> S[DataStore Step3]
-    S --> T[Custom Status Step3]
-    P --> K
-    R --> K
-    T --> K
+    L --> O[Step2]
+    M --> P[Step3]
+    N --> Q[Step3]
+    O --> R[Custom Status - Step1Completed]
+    P --> S[Custom Status - Step2Completed]
+    Q --> T[Custom Status - Step3Completed]
+	R --> K[End]
+	S --> K[End]
+	T --> K[End]
+    subgraph Step1
+        L --> Prep2[Prepare Step 2]
+        Prep2 --> End1[End Step 1]
+    end
+    subgraph Step2
+        M --> Store3[Step3]
+        Store3 --> End2[End Step 2]
+    end
+    subgraph Step3
+        N --> testTrowExcp[Test Throw Exception]
+        testTrowExcp --> End3[End Step 3]
+    end
+	style K fill:#f9f,stroke:#333,stroke-width:2px
 ```
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) pattern with a single Data Store. It retrieves messages from a Data Store, processes them through a series of steps (Step 1, Step 2, Step 3), and includes error handling with asynchronous exception logging. It also demonstrates restart and discard logic based on the number of retries. The flow is triggered either via HTTPS or DataStore Consumer adapter.
+  This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model with a single Data Store, restart, and discard functionality. It receives messages either via HTTPS or DataStore. The core logic routes messages through three steps, storing message data in the Data Store and logging async exceptions, discarding messages that exceed maximum retry attempts.
 
 - **Involved systems**
-    - Postman
-    - DS (DataStore)
+  - Postman
+  - DS (DataStore)
 
 - **Used Adapters**
-    - HTTPS
-    - DataStoreConsumer
+  - HTTPS (Sender)
+  - DataStore Consumer (Sender)
 
 - **Key steps**
-    1.  Receive message from HTTPS endpoint or DataStore.
-    2.  Check if the message should be reprocessed based on `SAP_DataStoreRetries` header against the `MaxRetries` parameter. If the header exceeds the configured limit, it routes message to discard path.
-    3.  If reprocesssing is needed, route the message to one of the steps based on the `Step` header value.
-    4.  Each step (Step 1, Step 2, Step 3) enriches the message and persists it to a Data Store and updates MPL Custom Status
-    5.  If a step encounters an exception, the exception is logged asynchronously.
-    6.  If the number of retries exceeds a maximum, the message is discarded after logging the discarded message.
-    7. Custom statuses are added at several steps along the way
+  1. Receive message via HTTPS or DataStore Consumer.
+  2. Determine if the message should be reprocessed or discarded based on retry count.
+  3. Route message to Step1, Step2 or Step3 based on message header "Step" value
+  4. Store message in data store (Step1, Step2, Step3).
+  5. Log any exceptions during steps in the Log Async Exception process.
+  6. Discard message if maximum retry count is reached by logging discaded message.
 
 - **Message transformation**
-    - The iFlow enriches the message with headers such as `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`, and `Step` using Enricher components.
-    - The MPL custom status is updated at various points in the flow
+  - Setting headers in "Set Headers" steps.
+  - Adding custom status messages in "Custom Status" steps.
+  - Enriching message content in "Prepare Step" activities within the Step subprocesses.
 
 - **Externalized parameters list and their descriptions**
-    - `RoleName`: Role required to access the HTTPS endpoint.
-    - `Maximum Retry Interval`: Maximum interval for retries with exponential backoff.
-    - `Exponential Backoff`: Flag to enable exponential backoff for retries.
-    - `Data Store Name`: Name of the Data Store used for persistence.
-    - `Poll Interval`: Interval for polling the Data Store.
-    - `Retry Interval`: Interval for retrying failed Data Store operations.
-    - `Lock Timeout`: Timeout for file locking in the Data Store.
-    - `Retention Threshold 4 Alerting`: Threshold for triggering alerts based on data retention.
-    - `Expiration Period`: Time period after which data in the Data Store expires.
-    - `MaxRetries`: Maximum number of retries before discarding the message.
+  - RoleName: Role required to access the HTTPS endpoint.
+  - Maximum Retry Interval: Maximum interval for retries.
+  - Exponential Backoff: Flag to enable exponential backoff for retries.
+  - Data Store Name: Name of the data store used for message persistence.
+  - Poll Interval: Interval for polling the Data Store.
+  - Retry Interval: Interval for retrying failed operations.
+  - Lock Timeout: Timeout for file lock operations.
+  - Retention Threshold 4 Alerting: Threshold for retention period alerting.
+  - Expiration Period: Period after which messages expire.
+  - MaxRetries: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
-Yes
+  Yes
