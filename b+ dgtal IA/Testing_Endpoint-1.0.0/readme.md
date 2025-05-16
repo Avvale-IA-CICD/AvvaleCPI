@@ -1,12 +1,12 @@
 **iFlowId**: Testing_Endpoint - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
-\`\`\`mermaid
+```mermaid
 graph LR
     Sender[Sender: HTTPS] --> StartEvent[Start]
     StartEvent --> EndEvent[End]
     EndEvent --> Receiver[Receiver: IAAdapter]
-\`\`\`
+```
 
 **Functional Summary**
 **Brief description of the iFlow**
