@@ -1,4 +1,3 @@
-markdown
 **iFlowId**: SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
