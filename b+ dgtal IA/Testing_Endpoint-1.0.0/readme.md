@@ -1,39 +1,31 @@
 **iFlowId**: Testing_Endpoint - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
-\`\`\`mermaid
+```mermaid
 graph LR
-    Sender[Sender] --> Start[Start Event HTTPS /test/ia]
-    Start --> Process[Integration Process]
-    Process --> End[End Event]
-    End --> Receiver[Receiver IAAdapter]
-\`\`\`
+    Sender[Sender - HTTPS] --> StartEvent[Start]
+    StartEvent --> EndEvent[End]
+    EndEvent --> Receiver[Receiver - IAAdapter]
+```
 
 **Functional Summary**
 **Brief description of the iFlow**
-This iFlow receives an HTTPS request, passes it through an integration process, and then sends the message to an Azure OpenAI endpoint using the IAAdapter.
+This iFlow receives data via HTTPS, passes it through an integration process, and sends it to an Azure OpenAI endpoint using an IAAdapter.
 
 **Involved systems with Adapters Type and Endpoint Type**
-- Sender: HTTPS (RoleBased)
-- Receiver: IAAdapter (AzureOpenAI - `https://aiobs-oai-int-fc.openai.azure.com/`)
+- Sender: HTTPS (Endpoint Type: Not specified)
+- Receiver: IAAdapter (Endpoint Type: https://aiobs-oai-int-fc.openai.azure.com/)
 
 **Key steps**
-1. Receive HTTPS request at `/test/ia`.
-2. Process message through the Integration Process.
-3. Send message to the Azure OpenAI endpoint using the IAAdapter.
+1. Receive message via HTTPS.
+2. Process message through the integration process.
+3. Send message to the Azure OpenAI endpoint via the IAAdapter.
 
 **Message transformation**
-- No explicit message transformation steps are defined in the provided XML.
+No explicit message transformation steps are defined within the provided XML.
 
 **Externalized parameters list and their descriptions**
-- `urlPath`: /test/ia (Path for the HTTPS endpoint)
-- `maximumBodySize`: 40 (Maximum body size for HTTPS requests)
-- `ClientKey`: b43cf1d6514c4d81a071274bf2237e42 (Client key for IAAdapter)
-- `ChatModelID`: gpt35turbo (Chat model ID for IAAdapter)
-- `ClientEndpoint`: `https://aiobs-oai-int-fc.openai.azure.com/` (Client endpoint for IAAdapter)
-- `xsrfProtection`: 0 (XSRF protection flag for HTTPS endpoint)
-- `userRole`: ESBMessaging.send (User role for HTTPS endpoint)
-- `senderAuthType`: RoleBased (Authentication type for HTTPS endpoint)
+No externalized parameters are defined in the provided XML.
 
 **DataStore / JMS Dependency**
 Not Found
