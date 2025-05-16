@@ -3,79 +3,74 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    style StartEvent_12079784 fill:#f9f,stroke:#333,stroke-width:2px
-    style StartEvent_2 fill:#f9f,stroke:#333,stroke-width:2px
-    style EndEvent_2 fill:#f9f,stroke:#333,stroke-width:2px
-    style EndEvent_9104 fill:#f9f,stroke:#333,stroke-width:2px
+    style StartEvent_HTTPS fill:#FFB6C1,stroke:#333,stroke-width:2px
+    style StartEvent_DataStore fill:#FFB6C1,stroke:#333,stroke-width:2px
+    style EndEvent fill:#FFB6C1,stroke:#333,stroke-width:2px
 
-    StartEvent_12079784[Start HTTPS]:::start --> CallActivity_9054[Set Headers]
-    StartEvent_2[Start DataStoreConsumer]:::start --> ExclusiveGateway_9098[Reprocess?]
+    StartEvent_HTTPS[HTTPS Start Event]:::start --> ReprocessQuestion{Reprocess?}
+    StartEvent_DataStore[DataStore Start Event]:::start --> ReprocessQuestion
 
-    ExclusiveGateway_9098 -- Yes --> ExclusiveGateway_12[Step?]
-    ExclusiveGateway_9098 -- Discard --> CallActivity_9101[Discaded]
-    CallActivity_9101 --> CallActivity_12079775[Log Discarded Message]
-    CallActivity_12079775 --> EndEvent_9104[Discarded MaxRetries]:::end
+    ReprocessQuestion -- Yes --> StepQuestion{Step?}
+    ReprocessQuestion -- Discard --> DiscardedStatus[Discarded Status]
 
-    ExclusiveGateway_12 -- Step1 --> CallActivity_12079790[Set Headers]
-    ExclusiveGateway_12 -- Step 2 --> CallActivity_12079792[Set Headers]
-    ExclusiveGateway_12 -- Step 3 --> CallActivity_12079794[Set Headers]
-    ExclusiveGateway_12 -- Unknown --> CallActivity_20[Custom Status]
-    CallActivity_20 --> EndEvent_2[End]:::end
+    DiscardedStatus --> LogDiscardedMessage[Log Discarded Message - Groovy]
+    LogDiscardedMessage --> EndEvent_Discarded[Discarded MaxRetries]:::end
 
-    CallActivity_9054 --> CallActivity_12079777[Step1 DataStore]
-    CallActivity_12079777 --> CallActivity_9062[Custom Status]
-    CallActivity_9062 --> EndEvent_9052[End]
+    StepQuestion -- Step1 --> SetHeaders_Step1[Set Headers - Step1]
+    StepQuestion -- Step2 --> SetHeaders_Step2[Set Headers - Step2]
+    StepQuestion -- Step3 --> SetHeaders_Step3[Set Headers - Step3]
+    StepQuestion -- Unknown --> CustomStatus_Unknown[Custom Status - Unknown]
 
-    CallActivity_12079790 --> CallActivity_15[Step 1]
-    CallActivity_12079792 --> CallActivity_18[Step 2]
-    CallActivity_12079794 --> CallActivity_21[Step 3]
+    SetHeaders_Step1 --> Step1[Step 1]
+    SetHeaders_Step2 --> Step2[Step 2]
+    SetHeaders_Step3 --> Step3[Step 3]
+    CustomStatus_Unknown --> EndEvent[End Event]:::end
 
-    CallActivity_15 --> CallActivity_12079780[Step2 DataStore]
-    CallActivity_18 --> CallActivity_12079781[Step3 DataStore]
-    CallActivity_21 --> CallActivity_9074[Custom Status]
-    CallActivity_9074 --> EndEvent_2:::end
+    Step1 --> DBStorage_Step2[Step2 - DBstorage]
+    Step2 --> DBStorage_Step3[Step3 - DBstorage]
+    Step3 --> CustomStatus_Step3[Custom Status - Step3]
 
-    CallActivity_12079780 --> CallActivity_9071[Custom Status]
-    CallActivity_12079781 --> CallActivity_9077[Custom Status]
+    DBStorage_Step2 --> CustomStatus_Step1[Custom Status - Step1]
+    DBStorage_Step3 --> CustomStatus_Step2[Custom Status - Step2]
+    CustomStatus_Step3 --> EndEvent
 
-    CallActivity_9071 --> EndEvent_2:::end
-    CallActivity_9077 --> EndEvent_2:::end
-
-    classDef start fill:#f9f,stroke:#333,stroke-width:2px;
+    CustomStatus_Step1 --> EndEvent
+    CustomStatus_Step2 --> EndEvent
+    classDef start fill:#FFB6C1,stroke:#333,stroke-width:2px
+    classDef end fill:#FFB6C1,stroke:#333,stroke-width:2px
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model for processing messages asynchronously using a Data Store. It includes steps for message processing, error handling, and discarding messages that exceed the maximum retry attempts. The iFlow starts either by a HTTPS call or by consuming a message from a Data Store.
+This iFlow processes messages retrieved from a Data Store, routes them based on a 'Step' header, and either processes them through a series of steps or discards them if the maximum retry count is exceeded. Exception handling is included for each step, logging exceptions asynchronously.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Postman - HTTPS (Sender)
-    - DS - DataStoreConsumer (Sender)
+    - Postman - HTTPS - EndpointSender
+    - DS - DataStoreConsumer - EndpointSender
 
 - **Key steps**
-    1.  Receive message via HTTPS or DataStore Consumer.
-    2.  Determine if the message should be reprocessed based on retry attempts.
-    3.  Route the message to different processing steps (Step 1, Step 2, Step 3) based on the `Step` header.
-    4.  Each step prepares the message and calls a local integration process.
-    5.  If an exception occurs in any step, log the exception and set a custom status.
-    6.  If the maximum retry attempts are exceeded, log and discard the message.
+    1.  Receive message from HTTPS endpoint or DataStore.
+    2.  Determine if the message should be reprocessed based on retry count. If max retries are exceeded, discard the message.
+    3.  Route the message based on the 'Step' header to Step 1, Step 2, or Step 3. If the step is unknown, set a custom status.
+    4.  Each step (Step 1, Step 2, Step 3) prepares the message, calls a local integration process, stores the message in the Data Store, and sets a custom status.
+    5.  Log any exceptions that occur during the steps asynchronously.
 
 - **Message transformation**
-    - Enricher components are used to set headers and custom status messages.
-    - Groovy scripts are used for logging and potentially throwing exceptions.
-    - Content modifiers are used to prepare messages for subsequent steps.
+    - Enricher components are used to set headers (e.g., SAP_Sender, SAP_Receiver, SAP_MessageType, Step) and custom statuses (SAP_MessageProcessingLogCustomStatus).
+    - Groovy scripts are used to log discarded messages and exceptions.
+    - Prepare Step 2 and Step 3 enrichers add a header 'Step' and wrap content in an envelope.
 
 - **Externalized parameters list and their descriptions**
-    - `RoleName`: Role required to access the HTTPS endpoint.
-    - `Maximum Retry Interval`: Maximum interval for retrying DataStore consumption.
-    - `Exponential Backoff`: Flag to enable exponential backoff for DataStore retries.
-    - `Data Store Name`: Name of the Data Store used for persistence.
-    - `Poll Interval`: Interval for polling the Data Store.
-    - `Retry Interval`: Interval for retrying DataStore consumption.
-    - `Lock Timeout`: Timeout for file lock in DataStore.
-    - `Retention Threshold 4 Alerting`: Retention threshold for alerting in DataStore.
-    - `Expiration Period`: Expiration period for messages in DataStore.
-    - `MaxRetries`: Maximum number of retries before discarding the message.
+    - RoleName: Role required to access the HTTPS endpoint.
+    - Maximum Retry Interval: Maximum interval for retrying DataStore consumption.
+    - Exponential Backoff: Flag to enable exponential backoff for DataStore retries.
+    - Data Store Name: Name of the Data Store used for persistence.
+    - Poll Interval: Interval for polling the Data Store.
+    - Retry Interval: Interval for retrying DataStore consumption.
+    - Lock Timeout: Timeout for file locking in the DataStore.
+    - Retention Threshold 4 Alerting: Retention threshold for alerting in DB storage.
+    - Expiration Period: Expiration period for messages in DB storage.
+    - MaxRetries: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
 Yes
@@ -84,8 +79,8 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-    - Groovy_Logging_Scripts/Log_Discarded_Message.groovy
-    - Groovy_Logging_Scripts/Log_Exception_Async.groovy
+    - Groovy_Logging_Scripts - Log_Discarded_Message.groovy
+    - Groovy_Logging_Scripts - Log_Exception_Async.groovy
 
 - **ProcessDirect ComponentType Dependency**
 Not Found
