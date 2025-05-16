@@ -3,66 +3,78 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    SQUEUE-->JMS_DISPATCHER--JMS-->Start
-    Postman-->HTTPS--HTTPS-->Start6
-    Start6-->SetHeaders0
-    SetHeaders0-->SaveInitialMsg
-    SaveInitialMsg-->CustomStatus0
-    CustomStatus0-->End5
-    Start-->Reprocess
-    Reprocess--Yes-->StepCheck
-    Reprocess--Discard-->DiscadedStatus
-    DiscadedStatus-->LogDiscardedMessageMaxRetries
-    LogDiscardedMessageMaxRetries-->DiscardedMaxRetries
-    StepCheck--Step1-->SetHeaders1
-    StepCheck--Step2-->SetHeaders2
-    StepCheck--Step3-->SetHeaders3
-    StepCheck--Unknown-->CustomStatusUnknown
-    CustomStatusUnknown-->LogDiscardedMessageUnknown
-    LogDiscardedMessageUnknown-->DiscardedUnknown
-    SetHeaders1-->Step1
-    SetHeaders2-->Step2
-    SetHeaders3-->Step3
-    Step1-->NextStep1
-    Step2-->NextStep2
-    Step3-->NextStep3
-    NextStep1-->CustomStatus1
-    NextStep2-->CustomStatus2
-    NextStep3-->CustomStatus3
-    CustomStatus1-->End
-    CustomStatus2-->End
-    CustomStatus3-->End
+    SQUEUE[SQUEUE]
+    Postman[Postman]
+    RQUEUE[RQUEUE]
+
+    SQUEUE -- JMS --> StartEvent
+    Postman -- HTTPS --> StartEvent6
+
+    StartEvent[Start] --> Reprocess?
+    StartEvent6[Start6] --> SetHeaders0
+
+    Reprocess? -- Yes --> Step?
+    Reprocess? -- Discard --> Discarded
+
+    Step?[Step?] --> SetHeaders1
+    Step? --> SetHeaders2
+    Step? --> SetHeaders3
+    Step? -- Unknown --> CustomStatusDiscarded
+
+    SetHeaders0 --> SaveInitialMsg --> CustomStatus0 --> EndEvent5
+
+    SetHeaders1 --> Step1
+    SetHeaders2 --> Step2
+    SetHeaders3 --> Step3
+
+    Step1 --> NextStep1
+    Step2 --> NextStep2
+    Step3 --> CustomStatus3
+
+    NextStep1 -- JMS --> RQUEUE
+    NextStep2 -- JMS --> RQUEUE
+    CustomStatus3 --> End
+
+    CustomStatus0 --> EndEvent5
+    CustomStatusDiscarded --> LogDiscardedMessage --> EndEventDiscarded
+
+    Discarded --> CustomStatusDiscarded
+    EndEvent[End]
+    EndEvent5[End5]
+    EndEventDiscarded[Discarded Unknown]
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model using a single JMS queue. It processes messages in multiple steps, with error handling and message discarding mechanisms. The iFlow includes logic to retry failed messages and discard messages that exceed the maximum retry attempts or messages that are routed to a non existing step.
+This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern with a single JMS queue. It receives messages via JMS or HTTPS, processes them in multiple steps, and handles exceptions by logging them and optionally discarding the message after a maximum number of retries.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - SQUEUE (JMS, EndpointSender)
-    - Postman (HTTPS, EndpointSender)
-    - RQUEUE (JMS, EndpointRecevier)
+    - SQUEUE: JMS (EndpointSender)
+    - Postman: HTTPS (EndpointSender)
+    - RQUEUE: JMS (EndpointRecevier)
 
 - **Key steps**
-    1.  The iFlow is triggered either by a JMS message from the SQUEUE or by an HTTPS request from Postman.
-    2.  The iFlow routes the message based on the `Step` property using an exclusive gateway.
-    3.  Each step (Step 1, Step 2, Step 3) involves preparing the message, processing it, and updating the message processing log.
-    4.  If an exception occurs during processing, the iFlow logs the exception asynchronously.
-    5.  If a message exceeds the maximum retry attempts (`MaxRetries`), or if the message has an unknown step, it is discarded and logged accordingly.
+    1.  Receive message via JMS from SQUEUE or HTTPS from Postman.
+    2.  Route messages based on the "Step" property.
+    3.  Process messages in three steps (Step 1, Step 2, Step 3), each implemented as a separate local integration process.
+    4.  Each step prepares the message for the next step using an Enricher.
+    5.  After each step the message is sent to the RQUEUE queue to be picked up by the next step.
+    6.  If the message fails after exceeding maximum retries, discard the message, log details.
+    7.  If the message property "Step" doesn't match, the message is discarded
 
 - **Message transformation**
-    - The iFlow uses enrichers to set headers (e.g., `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`) and custom status messages (`SAP_MessageProcessingLogCustomStatus`).
-    - Groovy scripts (`Log_Discarded_Message.groovy`, `Log_Exception_Async.groovy`) are used for logging.
-    - Message content is modified during Step 1, Step 2 and Step 3.
+    - Enricher components in each step prepare the message for the next step by setting headers and body content.
+    - Set Headers components set headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType`.
+    - Custom Status components set the `SAP_MessageProcessingLogCustomStatus`.
 
 - **Externalized parameters list and their descriptions**
-    - `SEDA_MAIN_QUEUE`: The name of the main JMS queue used for message processing.
-    - `Number of Concurrent Processes`: Specifies the number of concurrent processes for the JMS adapter.
-    - `Maximum Retry Interval`: The maximum retry interval for the JMS adapter.
-    - `Retention Threshold 4 Alerting`: Retention threshold for alerting purposes in the JMS adapter.
-    - `Expiration Period`: Expiration period for messages in the JMS adapter.
-    - `Retry Interval`: Retry interval for the JMS adapter.
-    - `MaxRetries`: The maximum number of retries before a message is discarded.
+    - SEDA_MAIN_QUEUE: The JMS queue used for message exchange between steps.
+    - Number of Concurrent Processes: Number of concurrent processes for JMS Adapter.
+    - Maximum Retry Interval: Maximum Retry Interval for JMS Adapter.
+    - Expiration Period: Expiration Period for JMS Adapter.
+    - Retention Threshold 4 Alerting: Retention Threshold 4 Alerting for JMS Adapter.
+    - Retry Interval: Retry Interval for JMS Adapter.
+    - MaxRetries: The maximum number of retries before a message is discarded.
 
 - **DataStore / JMS Dependency**
 Yes
@@ -71,8 +83,9 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-    - Log_Discarded_Message.groovy, scriptBundleId: Groovy_Logging_Scripts
-    - Log_Exception_Async.groovy, scriptBundleId: Groovy_Logging_Scripts
+    - Groovy_Logging_Scripts:
+        - Log_Discarded_Message.groovy
+        - Log_Exception_Async.groovy
 
 - **ProcessDirect ComponentType Dependency**
 Not Found
