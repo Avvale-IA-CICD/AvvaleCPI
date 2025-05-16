@@ -1,39 +1,40 @@
-**iFlowId**: Testing_Endpoint - **iFlowVersion**: 1.0.0
+iFlowId: Testing_Endpoint - iFlowVersion: 1.0.0
 
 **Mermaid Diagram**
-```mermaid
+\`\`\`mermaid
 graph LR
-    Sender[Sender: HTTPS] --> StartEvent[Start]
-    StartEvent --> EndEvent[End]
-    EndEvent --> Receiver[Receiver: IAAdapter]
-```
+    Sender[Sender] --> StartEvent(StartEvent)
+    StartEvent --> EndEvent(EndEvent)
+    EndEvent --> Receiver[Receiver]
+    Sender -- HTTPS Adapter --> StartEvent
+    EndEvent -- IAAdapter --> Receiver
+\`\`\`
 
 **Functional Summary**
 **Brief description of the iFlow**
-This iFlow receives an HTTPS message, and then sends a message to an IAAdapter (AzureOpenAI).
+This iFlow receives a message via HTTPS, then sends it to an Azure OpenAI endpoint using the IAAdapter.
 
 **Involved systems with Adapters Type and Endpoint Type**
-- Sender: HTTPS, Endpoint Type: Not specified
-- Receiver: IAAdapter, Endpoint Type: https://aiobs-oai-int-fc.openai.azure.com/
+- Sender: HTTPS (Endpoint Type: Not applicable)
+- Receiver: IAAdapter (Endpoint Type: https://aiobs-oai-int-fc.openai.azure.com/)
 
 **Key steps**
-1. Receive message via HTTPS adapter.
-2. Send message to IAAdapter (AzureOpenAI).
+1. Receive message via HTTPS.
+2. Send message to Azure OpenAI endpoint using IAAdapter.
 
 **Message transformation**
-No explicit message transformation steps are present in the provided XML. The iFlow directly connects the start and end events, implying no message content manipulation.
+No explicit message transformation step is present in the provided XML.
 
 **Externalized parameters list and their descriptions**
-- HTTPS Adapter:
-    - urlPath: /test/ia
-    - maximumBodySize: 40
-    - userRole: ESBMessaging.send
-    - senderAuthType: RoleBased
-- IAAdapter:
-    - ClientEndpoint: https://aiobs-oai-int-fc.openai.azure.com/
-    - ChatModelID: gpt35turbo
-    - ClientKey: b43cf1d6514c4d81a071274bf2237e42
-    - IAType: AzureOpenAI
+The following parameters are externalized for the HTTPS sender adapter:
+- `urlPath`: `/test/ia`
+- `maximumBodySize`: `40`
+
+The following parameters are externalized for the IAAdapter receiver adapter:
+- `ClientEndpoint`: `https://aiobs-oai-int-fc.openai.azure.com/`
+- `ClientKey`: `b43cf1d6514c4d81a071274bf2237e42`
+- `ChatModelID`: `gpt35turbo`
+- `IAType`: `AzureOpenAI`
 
 **DataStore / JMS Dependency**
 Not Found
