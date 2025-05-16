@@ -3,70 +3,65 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Postman --> HTTPS[Start_5]
-    DS --> DataStore[Start]
-    DataStore --> Reprocess{Reprocess?}
+    Postman --> HTTPS[Start Event HTTPS]
+    DS --> DataStoreConsumer[Start Event DataStore]
+    DataStoreConsumer --> Reprocess{Reprocess?}
     HTTPS --> Reprocess
-
-    Reprocess -- Yes --> StepDecision{Step?}
-    Reprocess -- Discard --> Discarded[Discaded]
+    Reprocess -- Yes --> StepCheck{Step?}
+    Reprocess -- Discard --> Discarded[(Discarded)]
     Discarded --> LogDiscarded[Log Discarded Message]
-    LogDiscarded --> DiscardedMaxRetries((Discarded MaxRetries))
-
-    StepDecision -- Step1 --> SetHeaders1[Set Headers]
-    StepDecision -- Step2 --> SetHeaders2[Set Headers]
-    StepDecision -- Step 3 --> SetHeaders3[Set Headers]
-    StepDecision -- Unknown --> UnknownStep[Custom Status]
-    UnknownStep --> End((End))
-
+    LogDiscarded --> DiscardedMaxRetries[(Discarded MaxRetries)]
+    StepCheck -- Step1 --> SetHeaders1[Set Headers Step1]
+    StepCheck -- Step2 --> SetHeaders2[Set Headers Step2]
+    StepCheck -- Step 3 --> SetHeaders3[Set Headers Step 3]
+    StepCheck -- Unknown --> UnknownStep[Custom Status Unknown]
+    UnknownStep --> End
     SetHeaders1 --> Step1[Step 1]
     SetHeaders2 --> Step2[Step 2]
     SetHeaders3 --> Step3[Step 3]
-
-    Step1 --> Step2DB[Step2]
-    Step2DB --> CustomStatus1[Custom Status]
+    Step1 --> DBStorage1[Step1]
+    Step2 --> DBStorage2[Step2]
+    Step3 --> DBStorage3[Step3]
+    DBStorage1 --> CustomStatus1[Custom Status Step1]
+    DBStorage2 --> CustomStatus2[Custom Status Step2]
+    DBStorage3 --> CustomStatus3[Custom Status Step3]
     CustomStatus1 --> End
-
-    Step2 --> Step3DB[Step3]
-    Step3DB --> CustomStatus2[Custom Status]
     CustomStatus2 --> End
-
-    Step3 --> Step3Call[Step 3]
-    Step3Call --> CustomStatus3[Custom Status]
     CustomStatus3 --> End
+    EndEvent[(End)]
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model for processing messages retrieved from a Data Store. It includes steps for message processing, exception handling, and discarding messages that exceed the maximum retry attempts. The flow starts with a message from either an HTTPS endpoint or a Data Store, routes the message through several processing steps, and logs exceptions asynchronously.
+This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model for processing messages asynchronously using a Data Store. It includes steps for message processing, exception handling, and discarding messages after a certain number of retries. The flow starts with a message received via HTTPS or DataStore, processes it through multiple steps, and stores the message in a Data Store at each step. It also includes logic to handle exceptions and discard messages that exceed the maximum retry limit.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Postman - HTTPS - Sender
-    - DS - DataStoreConsumer - Sender
+    - Postman - HTTPS - EndpointSender
+    - DS - DataStoreConsumer - EndpointSender
 
 - **Key steps**
-    1. Receive message from HTTPS endpoint or DataStore.
-    2. Determine if the message needs to be reprocessed based on retry attempts.
-    3. Route the message to Step 1, Step 2, or Step 3 based on the `Step` header.
-    4. Each step (Step 1, Step 2, Step 3) enriches the message and calls a local integration process.
-    5. If an exception occurs in any step, log the exception asynchronously.
-    6. If the maximum retry attempts are exceeded, discard the message and log it.
+    1. Receive message via HTTPS or DataStore.
+    2. Determine if the message should be reprocessed or discarded based on the retry count.
+    3. Process the message through Step 1, Step 2, and Step 3.
+    4. Store the message in the Data Store at each step.
+    5. Handle exceptions in each step and log them.
+    6. Discard messages that exceed the maximum retry limit.
 
 - **Message transformation**
-    - Set Headers: Sets headers like `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`, and `Step` at various stages.
-    - Custom Status: Sets custom status messages in the message processing log.
-    - Prepare Step X: Enricher to prepare the message for the next step.
+    - Enricher activities are used to set headers and custom statuses at various points in the flow.
+    - Groovy scripts are used for logging and potentially throwing exceptions.
+    - Content modifiers are used to prepare the message for each step.
 
 - **Externalized parameters list and their descriptions**
-    - RoleName: User role for HTTPS sender authentication.
-    - Maximum Retry Interval: Maximum retry interval for DataStore consumer.
-    - Exponential Backoff: Exponential backoff setting for DataStore consumer.
-    - Data Store Name: Name of the Data Store.
-    - Poll Interval: Poll interval for DataStore consumer.
-    - Retry Interval: Retry interval for DataStore consumer.
-    - Lock Timeout: Lock timeout for DataStore consumer.
-    - Retention Threshold 4 Alerting: Retention threshold for alerting in DataStore.
-    - Expiration Period: Expiration period for DataStore entries.
+    - RoleName: Role required to access the HTTPS endpoint.
+    - Maximum Retry Interval: Maximum interval between retries for DataStoreConsumer.
+    - Exponential Backoff: Flag to enable exponential backoff for DataStoreConsumer retries.
+    - Data Store Name: Name of the Data Store used for message persistence.
+    - Poll Interval: Interval for polling the Data Store.
+    - Retry Interval: Interval between retries for DataStoreConsumer.
+    - Lock Timeout: Timeout for file lock in DataStoreConsumer.
+    - Retention Threshold 4 Alerting: Threshold for alerting on message retention.
+    - Expiration Period: Period after which messages expire in the Data Store.
     - MaxRetries: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
@@ -76,7 +71,8 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-    - Groovy_Logging_Scripts
+    - Log_Discarded_Message.groovy - Groovy_Logging_Scripts
+    - Log_Exception_Async.groovy - Groovy_Logging_Scripts
 
 - **ProcessDirect ComponentType Dependency**
 Not Found
