@@ -55,7 +55,6 @@ graph LR
     UnknownStep --> End
     EndDiscarded --> End
 ```
-```
 
 **Functional Summary**
 - **Brief description of the iFlow**
