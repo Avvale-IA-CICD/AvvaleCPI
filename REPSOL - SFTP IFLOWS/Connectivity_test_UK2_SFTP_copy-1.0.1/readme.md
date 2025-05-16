@@ -4,35 +4,36 @@
 \`\`\`mermaid
 graph LR
     A[Sender SFTP] --> B(Start Event)
-    B --> C{JavaScript}
-    C --> D[Transform Filename]
-    D --> E[Message Mapping]
-    E --> F(Send to Receiver SFTP)
+    B --> C{JavaScript 1}
+    C --> D{Transform Filename}
+    D --> E{Message Mapping 1}
+    E --> F[Send 1]
     F --> G(End Event)
-    G --> H[Receiver SFTP]
+    F --> H[Receiver SFTP]
 \`\`\`
+
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow retrieves a file from a sender SFTP server, performs a filename transformation and a message mapping, and then sends the resulting file to a receiver SFTP server.
+The iFlow retrieves a file from an SFTP server, transforms the filename, performs a message mapping (though the mapping itself is not defined), and then sends the file to another SFTP server.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Sender: SFTP Adapter, Endpoint Sender
-    - Receiver: SFTP Adapter, Endpoint Receiver
+    - Sender SFTP: SFTP Adapter, Endpoint Sender
+    - Receiver SFTP: SFTP Adapter, Endpoint Receiver
 
 - **Key steps**
-    1. Receive file from the sender SFTP server.
-    2. Execute a JavaScript.
-    3. Transform the filename using a Groovy script (transformFilename.groovy).
-    4. Perform a message mapping.
-    5. Send the processed file to the receiver SFTP server.
+    1.  Receive file from Sender SFTP server via a scheduled start event.
+    2.  Execute a Javascript step.
+    3.  Transform the filename using a Groovy Script "transformFilename.groovy".
+    4.  Execute a Message Mapping step (no mapping defined).
+    5.  Send the file to the Receiver SFTP server.
 
 - **Message transformation**
-    - Filename transformation using Groovy script: transformFilename.groovy
-    - Message Mapping: Message Mapping 1
+    - Filename Transformation via Groovy Script: "transformFilename.groovy"
+    - Message Mapping: Message Mapping step with no mapping details
 
 - **Externalized parameters list and their descriptions**
-    - host: Hostname of the receiver SFTP server.
-    - user_uk2: Username for the receiver SFTP server.
+    - `host`: Hostname of the Receiver SFTP server.
+    - `user_uk2`: Username for the Receiver SFTP server.
 
 - **DataStore / JMS Dependency**
 Not Found
