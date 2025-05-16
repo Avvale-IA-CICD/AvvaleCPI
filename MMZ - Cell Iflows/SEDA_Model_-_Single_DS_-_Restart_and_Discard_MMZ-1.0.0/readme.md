@@ -1,76 +1,86 @@
+markdown
 **iFlowId**: SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
+- **Visual representation of the flow**
 ```mermaid
 graph LR
-    A[Postman/DataStore] --> B(SEDA Router)
-    B --> C{Reprocess?}
-    C -- Yes --> D{Step?}
-    C -- Discard --> E[DiscardedMaxRetries]
-    D -- Step1 --> F[Set Headers Step1]
-    D -- Step2 --> G[Set Headers Step2]
-    D -- Step3 --> H[Set Headers Step3]
-    D -- Unknown --> I[Custom Status UnknownStep]
-    F --> J(Step 1)
-    G --> K(Step 2)
-    H --> L(Step 3)
-    J --> M[Step2 DataStore]
-    K --> N[Step3 DataStore]
-    L --> O[Custom Status Step3Completed]
-    M --> P[Custom Status Step1Completed]
-    N --> Q[Custom Status Step2Completed]
-    O --> R[End]
-    P --> R
-    Q --> R
-    I --> R
-    E --> S[Log Discarded Message]
-    S --> T[End Discarded MaxRetries]
+    Postman --> HTTPS[HTTPS Sender]
+    HTTPS --> DummyStart
+    DataStore --> Start[DataStore Consumer]
+    Start --> Reprocess{Reprocess?}
+    Reprocess -- Yes --> StepDecision{Step?}
+    Reprocess -- Discard --> DiscardedStatus[Discaded]
+    DiscardedStatus --> LogDiscarded[Log Discarded Message - Groovy_Logging_Scripts]
+    LogDiscarded --> DiscardedMaxRetries
+
+    StepDecision -- Step1 --> SetHeaders1[Set Headers]
+    StepDecision -- Step2 --> SetHeaders2[Set Headers]
+    StepDecision -- Step 3 --> SetHeaders3[Set Headers]
+    StepDecision -- Unknown --> UnknownStatus[Custom Status]
+    UnknownStatus --> End
+
+    SetHeaders1 --> Step1[Step 1]
+    SetHeaders2 --> Step2[Step 2]
+    SetHeaders3 --> Step3[Step 3]
+
+    Step1 --> DBStorage1[Step2]
+    Step2 --> DBStorage2[Step3]
+    Step3 --> DBStorage3[Step3]
+
+    DBStorage1 --> CustomStatus1[Custom Status]
+    DBStorage2 --> CustomStatus2[Custom Status]
+    DBStorage3 --> CustomStatus3[Custom Status]
+
+    CustomStatus1 --> End
+    CustomStatus2 --> End
+    CustomStatus3 --> End
+    LogAsyncException --> End
+
+    style End fill:#f9f,stroke:#333,stroke-width:2px
+    style DiscardedMaxRetries fill:#f9f,stroke:#333,stroke-width:2px
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-  This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model for processing messages from a Data Store. It includes steps for processing the message, handling exceptions, and discarding messages that exceed the maximum retry attempts. The flow involves multiple integration processes for modularity and reusability.
+This iFlow processes messages retrieved from a Data Store, routes them based on the 'Step' header, and stores them back into the Data Store after each step. It includes error handling and a mechanism to discard messages that exceed a maximum retry count.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Postman - HTTPS - EndpointSender
-    - DS - DataStoreConsumer - EndpointSender
+    - Postman - HTTPS - Sender
+    - DS - DataStoreConsumer - Sender
 
 - **Key steps**
-    1. Receive message via HTTPS or DataStore.
-    2. Store the message in a Data Store.
-    3. Route the message through a SEDA router.
-    4. Process the message in three steps (Step 1, Step 2, Step 3), each implemented as a separate integration process.
-    5. Handle exceptions in each step and log them.
-    6. Discard messages exceeding the maximum retry attempts.
-    7. Log discarded messages.
-    8. Set custom status messages at various points in the flow.
+ 1. Receives a message either from HTTPS endpoint or DataStore.
+ 2. Checks if the message needs to be reprocessed based on retry count. If the retry count exceeds the maximum allowed, the message is discarded.
+ 3. Routes the message based on the 'Step' header to different processing steps (Step1, Step2, Step3).
+ 4. Each step stores the message in the Data Store.
+ 5. Sets custom status for message processing log after each step.
+ 6. Logs exceptions asynchronously.
 
 - **Message transformation**
-    - Enricher components are used to set headers and custom status messages.
-    - Groovy scripts are used for logging exceptions and discarded messages.
-    - Prepare Step 2 and Prepare Step 3 enrichers add content to the message
+    - The iFlow uses Enrichers to set headers and custom status messages.
+    - Prepare Step activities add headers to the message.
 
 - **Externalized parameters list and their descriptions**
-    - `RoleName`: Role required to access the HTTPS endpoint.
-    - `Maximum Retry Interval`: Maximum interval for retrying DataStore consumption.
-    - `Exponential Backoff`: Flag to enable exponential backoff for DataStore retries.
-    - `Data Store Name`: Name of the Data Store used for message persistence.
-    - `Poll Interval`: Interval for polling the Data Store.
-    - `Retry Interval`: Interval for retrying DataStore consumption.
-    - `Lock Timeout`: Timeout for file lock in DataStore.
-    - `Retention Threshold 4 Alerting`: Threshold for alerting on data retention.
-    - `Expiration Period`: Period after which data expires.
-    - `MaxRetries`: Maximum number of retries before discarding a message.
+    - `{{RoleName}}`: User role for HTTPS sender authentication.
+    - `{{Maximum Retry Interval}}`: Maximum retry interval for DataStore consumer.
+    - `{{Exponential Backoff}}`: Exponential backoff setting for DataStore consumer.
+    - `{{Data Store Name}}`: Name of the Data Store used for persistence.
+    - `{{Poll Interval}}`: Poll interval for DataStore consumer.
+    - `{{Retry Interval}}`: Retry interval for DataStore consumer.
+    - `{{Lock Timeout}}`: Lock timeout for DataStore consumer.
+    - `{{Retention Threshold 4 Alerting}}`: Retention threshold for alerting in DB storage.
+    - `{{Expiration Period}}`: Expiration period for DB storage.
+    - `{{MaxRetries}}`: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
-    Yes
+Yes
 
 - **Cloud Connector Dependency**
-    Not Found
+Not Found
 
 - **Common Scripts Dependency**
-    - Groovy_Logging_Scripts/Log_Discarded_Message.groovy
-    - Groovy_Logging_Scripts/Log_Exception_Async.groovy
+    - Groovy_Logging_Scripts
 
 - **ProcessDirect ComponentType Dependency**
-    Not Found
+Not Found
