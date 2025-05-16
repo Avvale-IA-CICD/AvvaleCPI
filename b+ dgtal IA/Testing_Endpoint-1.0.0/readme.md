@@ -1,30 +1,40 @@
 **iFlowId**: Testing_Endpoint - **iFlowVersion**: 1.0.0
 
 **Mermaid Diagram**
-```mermaid
+\`\`\`mermaid
 graph LR
-    Sender[Sender - HTTPS] --> StartEvent((Start))
-    StartEvent --> EndEvent((End))
-    EndEvent --> Receiver[Receiver - IAAdapter]
-```
+    Sender[Sender: HTTPS Adapter] --> StartEvent[Start Event]
+    StartEvent --> EndEvent[End Event]
+    EndEvent --> Receiver[Receiver: IAAdapter]
+\`\`\`
 **Functional Summary**
 **Brief description of the iFlow**
-This iFlow receives a request via HTTPS, passes the message to an IAAdapter (AzureOpenAI), and then sends the message to a receiver.
+This iFlow receives a message via HTTPS, then it sends the message to an Azure Open AI endpoint using the IAAdapter.
 
 **Involved systems with Adapters Type and Endpoint Type**
-- Sender: HTTPS (HTTPS)
-- Receiver: IAAdapter (com-avvale, AzureOpenAI endpoint: https://aiobs-oai-int-fc.openai.azure.com/)
+- Sender: HTTPS Adapter
+- Receiver: IAAdapter - Endpoint Type: AzureOpenAI - Endpoint: https://aiobs-oai-int-fc.openai.azure.com/
 
 **Key steps**
-1. Receive message via HTTPS endpoint.
-2. Send message to IAAdapter.
-3. Message is delivered to receiver.
+1.  Receive message via HTTPS.
+2.  Send message to Azure OpenAI via IAAdapter.
+3.  End
 
 **Message transformation**
-No explicit message transformation steps are defined in the provided XML.
+None.
 
 **Externalized parameters list and their descriptions**
-No externalized parameters are explicitly defined in the provided XML.
+- HTTPS Adapter:
+    - `urlPath`: `/test/ia` - URL path for the HTTPS endpoint.
+    - `maximumBodySize`: `40` - Maximum body size of the message.
+    - `userRole`: `ESBMessaging.send` - User role for authorization.
+    - `senderAuthType`: `RoleBased` - Authentication type for the sender.
+
+- IAAdapter:
+    - `ClientKey`: `b43cf1d6514c4d81a071274bf2237e42` - Client Key for authentication.
+    - `ChatModelID`: `gpt35turbo` - Chat Model ID.
+    - `ClientEndpoint`: `https://aiobs-oai-int-fc.openai.azure.com/` - The endpoint for the AI service.
+    - `IAType`: `AzureOpenAI` - The type of Intelligent Adapter used.
 
 **DataStore / JMS Dependency**
 Not Found
