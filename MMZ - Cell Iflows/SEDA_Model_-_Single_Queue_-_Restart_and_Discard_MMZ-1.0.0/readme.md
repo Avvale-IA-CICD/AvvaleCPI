@@ -4,74 +4,102 @@
 ```mermaid
 graph LR
     SQUEUE[SQUEUE]
+    StartEvent[Start Event]
+    ExclusiveGatewayReprocess[Reprocess?]
+    ExclusiveGatewayStep[Step?]
+    Step1SetHeaders[Set Headers]
+    Step1[Step 1]
+    Step2SetHeaders[Set Headers]
+    Step2[Step 2]
+    Step3SetHeaders[Set Headers]
+    Step3[Step 3]
+    NextStep1[Next Step]
+    NextStep2[Next Step]
+    CustomStatus1[Custom Status]
+    CustomStatus2[Custom Status]
+    CustomStatus3[Custom Status]
+    DiscardedUnknown[Discarded Unknown]
+    LogDiscardedUnknown[Log Discarded Message]
+    DiscardedMaxRetries[Discarded MaxRetries]
+    LogDiscardedMaxRetries[Log Discarded Message]
+    EndEvent[End Event]
     Postman[Postman]
+    StartEventDummy[Start 6]
+    SaveInitialMsg[Save Initial Msg]
+    CustomStatusStep0[Custom Status]
     RQUEUE[RQUEUE]
 
-    SQUEUE -- JMS Adapter --> StartEvent[Start]
-    Postman -- HTTPS Adapter --> StartEvent6[Start 6]
-    StartEvent6 --> SetHeaders0[Set Headers]
-    SetHeaders0 --> SaveInitialMsg[Save Initial Msg]
-    SaveInitialMsg -- JMS Adapter --> RQUEUE
-    StartEvent --> Reprocess[Reprocess?]
-    Reprocess -- Yes --> StepGateway[Step?]
-    Reprocess -- Discard --> DiscardMaxRetriesStatus[Discaded]
-    DiscardMaxRetriesStatus --> LogDiscardedMessageMaxRetries[Log Discarded Message]
-    LogDiscardedMessageMaxRetries --> DiscardedMaxRetries[Discarded MaxRetries]
-    StepGateway -- Step1 --> SetHeaders1[Set Headers]
-    StepGateway -- Step 2 --> SetHeaders2[Set Headers]
-    StepGateway -- Step 3 --> SetHeaders3[Set Headers]
-    StepGateway -- Unknown --> DiscardUnknownStatus[Custom Status]
-    DiscardUnknownStatus --> LogDiscardedMessageUnknown[Log Discarded Message]
-    LogDiscardedMessageUnknown --> DiscardedUnknown[Discarded Unknown]
-    SetHeaders1 --> Step1[Step 1]
-    SetHeaders2 --> Step2[Step 2]
-    SetHeaders3 --> Step3[Step 3]
-    Step1 --> NextStep1[Next Step]
-    Step2 --> NextStep2[Next Step]
-    Step3 --> NextStep3[Next Step]
-    NextStep1 --> CustomStatus1[Custom Status]
-    NextStep2 --> CustomStatus2[Custom Status]
-    NextStep3 --> CustomStatus3[Custom Status]
-    CustomStatus1 --> EndEvent[End]
+    SQUEUE -- JMS --> StartEvent
+    Postman -- HTTPS --> StartEventDummy
+    StartEventDummy --> SaveInitialMsg
+    SaveInitialMsg -- JMS --> RQUEUE
+    SaveInitialMsg --> CustomStatusStep0
+    CustomStatusStep0 --> ExclusiveGatewayReprocess
+
+    StartEvent --> ExclusiveGatewayReprocess
+    ExclusiveGatewayReprocess -- Yes --> ExclusiveGatewayStep
+    ExclusiveGatewayReprocess -- Discard --> LogDiscardedMaxRetries
+    LogDiscardedMaxRetries --> DiscardedMaxRetries
+    DiscardedMaxRetries --> EndEvent
+
+    ExclusiveGatewayStep -- Step1 --> Step1SetHeaders
+    ExclusiveGatewayStep -- Step 2 --> Step2SetHeaders
+    ExclusiveGatewayStep -- Step 3 --> Step3SetHeaders
+    ExclusiveGatewayStep -- Unknown --> LogDiscardedUnknown
+    LogDiscardedUnknown --> DiscardedUnknown
+    DiscardedUnknown --> EndEvent
+
+    Step1SetHeaders --> Step1
+    Step1 --> NextStep1
+    NextStep1 -- JMS --> RQUEUE
+    NextStep1 --> CustomStatus1
+    CustomStatus1 --> EndEvent
+
+    Step2SetHeaders --> Step2
+    Step2 --> NextStep2
+    NextStep2 -- JMS --> RQUEUE
+    NextStep2 --> CustomStatus2
     CustomStatus2 --> EndEvent
+
+    Step3SetHeaders --> Step3
+    Step3 --> CustomStatus3
     CustomStatus3 --> EndEvent
-    NextStep1 -- JMS Adapter --> RQUEUE
-    NextStep2 -- JMS Adapter --> RQUEUE
-    NextStep3 -- JMS Adapter --> RQUEUE
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern using a single JMS queue. It receives messages, processes them in multiple steps (Step 1, Step 2, Step 3), and handles exceptions. Messages can be reprocessed or discarded based on the number of retries.
+This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern using a single JMS queue. It receives messages, processes them in multiple steps (Step 1, Step 2, Step 3), and handles exceptions. The iFlow also includes retry and discard mechanisms for failed messages.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - SQUEUE: JMS Adapter, EndpointSender
-    - Postman: HTTPS Adapter, EndpointSender
-    - RQUEUE: JMS Adapter, EndpointRecevier
+    - SQUEUE: JMS, EndpointSender
+    - Postman: HTTPS, EndpointSender
+    - RQUEUE: JMS, EndpointRecevier
 
 - **Key steps**
-    1. Receive message from SQUEUE via JMS.
-    2. Determine the current processing step based on the `Step` property.
-    3. Execute the corresponding step (Step 1, Step 2, or Step 3) by calling a local integration process.
-    4. Within each step, prepare the message for the next step and set relevant headers.
-    5. Send the message to the next step via JMS to RQUEUE.
-    6. If the `Step` property is unknown, discard the message.
-    7. If the maximum number of retries is exceeded, discard the message.
+    1. Receive message from SQUEUE via JMS adapter.
+    2. Determine the current step of the message based on the `Step` property.
+    3. Based on the `Step` property, call the corresponding local integration process (Step 1, Step 2, or Step 3).
+    4. Each step prepares the message for the next step and sets the `Step` property accordingly.
+    5. Send the message to the next step via JMS adapter.
+    6. If the message exceeds the maximum retry count, discard the message.
+    7. If the step is unknown, discard the message.
     8. Log exceptions and discarded messages.
+    9. Dummy Start process to start the flow via HTTPS.
 
 - **Message transformation**
-    - Enricher components are used to set headers (SAP_Sender, SAP_Receiver, SAP_MessageType) and custom status messages.
-    - Groovy scripts are used to log discarded messages and exceptions.
-    - Each step prepares the message for the next step by setting the `Step` property and message content.
+    - Enricher activities are used to set headers (SAP_Sender, SAP_Receiver, SAP_MessageType) and properties (Step) to control the routing and processing of the message.
+    - Enricher activities are used to set custom status messages for monitoring.
+    - Groovy scripts are used to log exceptions and discarded messages.
+    - Prepare Step X enrichers are used to set the Step property and message content for the next step.
 
 - **Externalized parameters list and their descriptions**
-    - SEDA_MAIN_QUEUE: JMS Queue Name for inbound and outbound messages.
-    - Number of Concurrent Processes: Number of concurrent processes for the JMS receiver adapter.
-    - Maximum Retry Interval: Maximum retry interval for the JMS receiver adapter.
-    - Retry Interval: Retry interval for the JMS receiver adapter.
-    - Retention Threshold 4 Alerting: Retention threshold for alerting in JMS adapter.
-    - Expiration Period: Expiration period for messages in JMS adapter.
-    - MaxRetries: Maximum number of retries before discarding the message.
+    - SEDA_MAIN_QUEUE: The name of the JMS queue used for message exchange.
+    - Number of Concurrent Processes: Number of concurrent processes for JMS adapter.
+    - Maximum Retry Interval: Maximum retry interval for JMS adapter.
+    - Retention Threshold 4 Alerting: Retention threshold for alerting for JMS adapter.
+    - Expiration Period: Expiration period for JMS adapter.
+    - Retry Interval: Retry interval for JMS adapter.
+    - MaxRetries: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
 Yes
