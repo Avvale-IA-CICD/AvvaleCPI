@@ -3,73 +3,67 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    A[Postman/DataStore] --> B{Reprocess?}
-    B -- Yes --> C{Step?}
-    B -- Discard --> D[Discarded]
-    C -- Step1 --> E[Set Headers Step1]
-    C -- Step2 --> F[Set Headers Step2]
-    C -- Step3 --> G[Set Headers Step3]
-    C -- Unknown --> H[Custom Status Unknown]
-    E --> I[Step 1]
-    F --> J[Step 2]
-    G --> K[Step 3]
-    I --> L[Step2 DataStore]
-    J --> M[Step3 DataStore]
-    K --> N[Step3 Process]
-    L --> O[Custom Status Step1]
-    M --> P[Custom Status Step2]
-    N --> Q[Custom Status Step3]
-    O --> R[End]
-    P --> R
-    Q --> R
-    H --> R
-    D --> S[Log Discarded Message]
-    S --> T[Discarded MaxRetries]
-    T --> End
-    subgraph Step1 Process
-    I --> L
-    end
-    subgraph Step2 Process
-    J --> M
-    end
-    subgraph Step3 Process
-    K --> N
-    end
+    A[Postman] -- HTTPS --> B(Start Event - Dummy Start)
+    B -- Message --> C{Set Headers}
+    C -- Message --> D[Step1 - DataStore Put]
+    D -- Message --> E{Custom Status - Step0Completed}
+    E -- Message --> F(SEDA Router - Start Event)
+    F -- Message --> G{Reprocess?}
+    G -- Yes --> H{Step?}
+    G -- Discard --> I[Custom Status - DiscardedMaxRetries]
+    I -- Message --> J[Log Discarded Message]
+    J -- Message --> K(Discarded MaxRetries - End Event)
+    H -- Step1 --> L{Set Headers - Step1}
+    H -- Step2 --> M{Set Headers - Step2}
+    H -- Step3 --> N{Set Headers - Step3}
+    H -- Unknown --> O[Custom Status - UnknownStep]
+    O -- Message --> P(End Event)
+    L -- Message --> Q[Step 1 - Process Call]
+    M -- Message --> R[Step 2 - Process Call]
+    N -- Message --> S[Step 3 - Process Call]
+    Q -- Message --> T[Step2 - DataStore Put]
+    R -- Message --> U[Step3 - DataStore Put]
+    S -- Message --> V[Custom Status - Step3Completed]
+    T -- Message --> W[Custom Status - Step1Completed]
+    U -- Message --> X[Custom Status - Step2Completed]
+    W -- Message --> P
+    X -- Message --> P
+    V -- Message --> P
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model for asynchronous message processing using a Data Store. It includes steps for processing messages, handling exceptions, and discarding messages that exceed the maximum retry attempts. The flow starts with a message received via HTTPS or from a Data Store, routes the message through several processing steps, and logs exceptions. Messages can be discarded if processing fails after a certain number of retries.
+This iFlow processes messages asynchronously using a SEDA (Staged Event-Driven Architecture) router. It receives messages, persists them in a Data Store, and then processes them in a series of steps. The iFlow includes error handling and a mechanism to discard messages that exceed a maximum retry count.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Postman: HTTPS (Sender)
-    - DS: DataStoreConsumer (Sender)
+    - Postman - HTTPS - EndpointSender
+    - DS - DataStoreConsumer - EndpointSender
 
 - **Key steps**
-    1. Receive message via HTTPS or DataStore.
-    2. Determine if message should be reprocessed. If not, discard the message.
-    3. Route the message based on the 'Step' header to Step1, Step2, or Step3.
-    4. Each step (Step1, Step2, Step3) prepares the message and calls a local integration process.
-    5. Store the message in the Data Store after each step.
-    6. Log exceptions during processing.
-    7. Set custom status for each step.
-    8. Discard messages exceeding maximum retries.
+    1. Receive message via HTTPS.
+    2. Set initial headers.
+    3. Store the message in a Data Store (Step1).
+    4. Route the message based on the 'Step' header.
+    5. Process steps 1, 2, and 3 by calling local integration processes.
+    6. Store the message in a Data Store (Step2, Step3).
+    7. Update message processing log with custom status.
+    8. If max retries are exceeded, discard the message and log it.
 
 - **Message transformation**
-    - Set Headers: Enricher components are used to set headers like SAP_Sender, SAP_Receiver, SAP_MessageType, and Step.
-    - Custom Status: Enricher components are used to set custom status messages for logging.
-    - Prepare Step X: Enricher components are used to prepare the message for each step.
+    - The iFlow uses Enrichers to set headers and custom status.
+    - Groovy scripts are used for logging exceptions and discarded messages.
+    - Step 2 and Step 1 processes use Enrichers to prepare the message for subsequent steps by setting the 'Step' header and message content.
 
 - **Externalized parameters list and their descriptions**
     - RoleName: Role required to access the HTTPS endpoint.
-    - Maximum Retry Interval: Maximum interval between retries for DataStore consumer.
-    - Exponential Backoff: Flag to enable exponential backoff for DataStore consumer retries.
+    - Maximum Retry Interval: Maximum time interval for retries.
+    - Exponential Backoff: Flag to enable exponential backoff for retries.
     - Data Store Name: Name of the Data Store used for persistence.
     - Poll Interval: Interval for polling the Data Store.
-    - Retry Interval: Interval between retries for DataStore consumer.
-    - Lock Timeout: Timeout for file lock in DataStore consumer.
-    - Retention Threshold 4 Alerting: Retention threshold for alerting in DataStore.
-    - Expiration Period: Expiration period for data in DataStore.
+    - Retry Interval: Interval between retry attempts.
+    - Lock Timeout: Timeout for file locking.
+    - Retention Threshold 4 Alerting: Threshold for alerting on retention.
+    - Expiration Period: Time period after which messages expire.
     - MaxRetries: Maximum number of retries before discarding a message.
 
 - **DataStore / JMS Dependency**
