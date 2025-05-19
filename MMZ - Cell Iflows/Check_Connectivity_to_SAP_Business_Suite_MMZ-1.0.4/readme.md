@@ -1,57 +1,58 @@
-**iFlowId**: Check_Connectivity_to_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.4
+**iFlowId**: Check_Connectivity_to_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    COD[COD EndpointSender] --> SOAP_COD(StartEvent)
-    SOAP_COD --> Mapping
-    Mapping --> SOAP_ERP(EndEvent)
-    SOAP_ERP --> ERP[ERP EndpointRecevier]
-    linkStyle 0,2 stroke:#333, stroke-width:2px;
-    linkStyle 1 stroke:#333, stroke-width:2px;
+    COD[COD] --> StartEvent(Start)
+    linkStyle 0  stroke-width:2px,stroke:green;
+    StartEvent --> Mapping[Mapping]
+    Mapping --> EndEvent(End)
+    EndEvent --> ERP[ERP]
+    linkStyle 3 stroke-width:2px,stroke:green;
+    COD -- SOAP --> StartEvent
+    EndEvent -- SOAP --> ERP
 ```
 
 **Functional Summary**
--   **Brief description of the iFlow**
-    This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
+- **Brief description of the iFlow**
+This iFlow performs an End-to-End connectivity check from SAP Cloud for Customer (COD) to SAP ERP.
 
--   **Involved systems with Adapters Type and Endpoint Type**
-    -   COD (SAP Cloud for Customer) - SOAP Adapter - EndpointSender
-    -   ERP (SAP ERP) - SOAP Adapter - EndpointRecevier
+- **Involved systems with Adapters Type and Endpoint Type**
+    - COD (SOAP, EndpointSender)
+    - ERP (SOAP, EndpointRecevier)
 
--   **Key steps**
-    1.  The iFlow starts upon receiving a message from COD.
-    2.  The message is then passed to a mapping step.
-    3.  The mapping step `COD_ERP_CheckEnd2EndConnectivity` transforms the message.
-    4.  Finally, the transformed message is sent to ERP.
+- **Key steps**
+    1.  Receive message from COD via SOAP adapter.
+    2.  Execute message mapping.
+    3.  Send message to ERP via SOAP adapter.
 
--   **Message transformation**
-    -   Mapping `COD_ERP_CheckEnd2EndConnectivity`
+- **Message transformation**
+    - Mapping: COD_ERP_CheckEnd2EndConnectivity.opmap
 
--   **Externalized parameters list and their descriptions**
-    -   `COD_enableBasicAuthentication_3`: Enables Basic Authentication for COD.
-    -   `subject`: Subject.
-    -   `issuer`: Issuer.
-    -   `COD_address_2`: Address of the COD endpoint.
-    -   `COD_wsdlURL_1`: WSDL URL of the COD endpoint.
-    -   `Protocol-Hostname-Port`: Protocol, hostname, and port of the ERP endpoint.
-    -   `Client`: Client for the ERP connection.
-    -   `ERP_proxyType_4`: Proxy type for the ERP connection.
-    -   `location-id`: Location ID.
-    -   `ERP_authentication_5`: Authentication method for the ERP connection.
-    -   `artifactname`: Credential name for the ERP connection.
-    -   `ERP_allowChunking_3`: Allows chunking for the ERP connection.
-    -   `ERP_cleanupHeaders_2`: Cleans up headers for the ERP connection.
-    -   `p-key-alias`: Private key alias.
+- **Externalized parameters list and their descriptions**
+    - COD_enableBasicAuthentication_3: Enables basic authentication for the COD sender.
+    - subject: Subject for COD sender.
+    - issuer: Issuer for COD sender.
+    - COD_address_2: Address for the COD SOAP sender.
+    - COD_wsdlURL_1: WSDL URL for the COD SOAP sender.
+    - Protocol-Hostname-Port: Protocol, Hostname and Port for the ERP receiver.
+    - Client: Client for the ERP receiver.
+    - ERP_proxyType_4: Proxy type for the ERP receiver.
+    - location-id: Location ID for the ERP receiver.
+    - ERP_authentication_5: Authentication method for the ERP receiver.
+    - artifactname: Credential Name for the ERP receiver.
+    - ERP_allowChunking_3: Allow Chunking for the ERP receiver.
+    - ERP_cleanupHeaders_2: Cleanup Headers for the ERP receiver.
+    - p-key-alias: Private key alias for the ERP receiver.
 
--   **DataStore / JMS Dependency**
-    Not Found
+- **DataStore / JMS Dependency**
+Not Found
 
--   **Cloud Connector Dependency**
-    Not Found
+- **Cloud Connector Dependency**
+Not Found
 
--   **Common Scripts Dependency**
-    Not Found
+- **Common Scripts Dependency**
+Not Found
 
--   **ProcessDirect ComponentType Dependency**
-    Not Found
+- **ProcessDirect ComponentType Dependency**
+Not Found
