@@ -3,25 +3,31 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Postman--HTTPS-->DummyStart
-    SQUEUE--JMS-->SEDA_Router
-    DummyStart-->SaveInitialMsg
-    SaveInitialMsg-->SEDA_Router
-    SEDA_Router-->Step1_SetHeaders
-    SEDA_Router-->Step2_SetHeaders
-    SEDA_Router-->Step3_SetHeaders
-    SEDA_Router-->Unknown_Step
-    Step1_SetHeaders-->Step1
-    Step2_SetHeaders-->Step2
-    Step3_SetHeaders-->Step3
-    Step1-->Step1_NextStep
-    Step2-->Step2_NextStep
-    Step3-->End
-    Step1_NextStep--JMS-->RQUEUE
-    Step2_NextStep--JMS-->RQUEUE
-    Unknown_Step-->DiscardedUnknown
-    DiscardedUnknown-->LogDiscardedMessage
-    LogDiscardedMessage-->EndDiscardedUnknown
+    Postman --> HTTPS --> DummyStart
+    SQUEUE --> JMS --> StartEvent
+    StartEvent --> ReprocessDecision
+    ReprocessDecision -- Yes --> StepDecision
+    ReprocessDecision -- Discard --> DiscardMaxRetriesStatus
+    DiscardMaxRetriesStatus --> LogDiscardedMaxRetries
+    LogDiscardedMaxRetries --> DiscardedMaxRetries
+    StepDecision -- Step1 --> SetHeaders1
+    StepDecision -- Step2 --> SetHeaders2
+    StepDecision -- Step 3 --> SetHeaders3
+    StepDecision -- Unknown --> DiscardUnknownStatus
+    DiscardUnknownStatus --> LogDiscardedUnknown
+    LogDiscardedUnknown --> DiscardedUnknown
+    SetHeaders1 --> Step1
+    SetHeaders2 --> Step2
+    SetHeaders3 --> Step3
+    Step1 --> JMS_STEP1 --> RQUEUE
+    Step2 --> JMS_STEP2 --> RQUEUE
+    Step3 --> JMS_STEP3 --> RQUEUE
+    Step1 --> Step1CompletedStatus
+    Step2 --> Step2CompletedStatus
+    Step3 --> Step3CompletedStatus
+    Step1CompletedStatus --> EndEvent
+    Step2CompletedStatus --> EndEvent
+    Step3CompletedStatus --> EndEvent
 ```
 **BPMN Diagram**
 
@@ -29,48 +35,45 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model using a single JMS queue with restart and discard capabilities. It receives a message, processes it through multiple steps, and either sends it to a receiver queue or discards it based on the number of retries.
+  This iFlow implements a SEDA (Staged Event-Driven Architecture) model using a single JMS queue. It receives messages, processes them through a series of steps, and handles exceptions, retries, and discarding messages based on the number of retries.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - SQUEUE - JMS - EndpointSender
-    - Postman - HTTPS - EndpointSender
-    - RQUEUE - JMS - EndpointRecevier
+  - SQUEUE: JMS - EndpointSender
+  - Postman: HTTPS - EndpointSender
+  - RQUEUE: JMS - EndpointRecevier
 
 - **Key steps**
-    1. Receive message via HTTPS from Postman or JMS from SQUEUE.
-    2. Set initial headers in "Dummy Start" process.
-    3. Save the initial message to RQUEUE via JMS.
-    4. Route message through steps 1, 2, and 3 based on the "Step" property in "SEDA Router" process.
-    5. In each step, the iFlow sets message headers and sends the message to the next step (processes 'Step 1', 'Step 2', 'Step 3').
-    6. If a step encounters an exception, it logs the exception and ends.
-    7. After each step is completed custom statuses are saved to the message processing log.
-    8. If the maximum number of retries is reached, the message is discarded and logged.
-    9. Log discarded messages.
+ 1. Receive message via HTTPS or JMS.
+ 2. Set initial headers.
+ 3. Save initial message to JMS queue.
+ 4. Route message to Step 1, Step 2, or Step 3 based on the `Step` property.
+ 5. Each step prepares a message.
+ 6. Next steps send the message back to the JMS Queue
+ 7. If processing fails in a step, logs the exception asynchronously.
+ 8. If the message has been retried more than the maximum allowed times, discard the message after logging.
 
 - **Message transformation**
-    - In Step 2 and Step 1 a property "Step" is set to identify the current step.
-    - Prepare Step 2 and Prepare Step 3 enrichers add content to the message.
-    - Set Headers enrichers are used to set the Sender, Receiver, and MessageType for each Step.
-    - Custom Status enrichers are used to set the MessageProcessingLog CustomStatus for each Step.
+  - Enricher components are used in the processes "Dummy Start", "Step 1", "Step 2", "Step 3" and "SEDA Router" to set headers and custom statuses.
+  - Each step prepares the message for the next stage using the Enricher.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `MaxRetries`: 10 - Maximum number of retries before discarding the message.
-    - `SEDA_MAIN_QUEUE`: SEDA_MODEL_MMZ - The name of the main JMS queue.
-    - `Expiration Period`: 7 - Expiration period (likely in days, but the unit is not specified).
-    - `Maximum Retry Interval`: 1440 - Maximum interval between retries (likely in minutes, but the unit is not specified).
-    - `Retention Threshold 4 Alerting`: 1 - Threshold for retention alerting (unit not specified).
-    - `Retry Interval`: 15 - Interval between retries (likely in minutes, but the unit is not specified).
-    - `Number of Concurrent Processes`: 1 - Number of concurrent processes for the JMS adapter.
+  - `MaxRetries`: 10 - Maximum number of retries before discarding a message.
+  - `SEDA_MAIN_QUEUE`: SEDA_MODEL_MMZ - Name of the main JMS queue used for message processing.
+  - `Expiration Period`: 7 - Expiration period (units not specified).
+  - `Maximum Retry Interval`: 1440 - Maximum retry interval (units not specified).
+  - `Retention Threshold 4 Alerting`: 1 - Retention threshold for alerting (units not specified).
+  - `Retry Interval`: 15 - Retry interval (units not specified).
+  - `Number of Concurrent Processes`: 1 - Number of concurrent processes for the JMS receiver adapter.
 
 - **DataStore / JMS Dependency**
-Yes
+  Yes
 
 - **Cloud Connector Dependency**
-Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-    - Groovy_Logging_Scripts - Log_Discarded_Message.groovy
-    - Groovy_Logging_Scripts - Log_Exception_Async.groovy
+  - Log_Exception_Async.groovy - Groovy_Logging_Scripts
+  - Log_Discarded_Message.groovy - Groovy_Logging_Scripts
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+  Not Found
