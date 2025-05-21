@@ -1,12 +1,12 @@
-**iFlowId**: Check_Connectivity_to_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.4
+**iFlowId**: Check_Connectivity_to_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    COD[COD] -->|SOAP| Start
-    Start --> Mapping
-    Mapping --> End
-    End -->|SOAP| ERP[ERP]
+    COD[COD] --> SOAP(StartEvent) : SOAP
+    SOAP --> Mapping[Mapping]
+    Mapping --> SOAP_ERP(EndEvent)
+    SOAP_ERP --> ERP[ERP] : SOAP
 ```
 **BPMN Diagram**
 
@@ -14,19 +14,20 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-  This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
+This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - COD (EndpointSender) - SOAP
-    - ERP (EndpointRecevier) - SOAP
+    - COD: SOAP, EndpointSender
+    - ERP: SOAP, EndpointRecevier
 
 - **Key steps**
- 1. The iFlow starts with a message from COD.
- 2. The message is then passed to a Mapping step (COD_ERP_CheckEnd2EndConnectivity).
- 3. Finally, the message is sent to ERP.
+    1. The iFlow starts upon receiving a message from COD.
+    2. The message is passed to a Mapping step.
+    3. The Mapping activity (COD_ERP_CheckEnd2EndConnectivity.opmap) transforms the message.
+    4. The iFlow sends the transformed message to ERP.
 
 - **Message transformation**
-    - Mapping: COD_ERP_CheckEnd2EndConnectivity.opmap (src/main/resources/mapping/COD_ERP_CheckEnd2EndConnectivity)
+    - Mapping: COD_ERP_CheckEnd2EndConnectivity.opmap
 
 - **Externalized parameters list, configured values and their descriptions**
     - COD_address_2: /COD/ERP/SimpleConnect
@@ -41,17 +42,17 @@ graph LR
     - location-id:
     - artifactname:
     - p-key-alias:
-    - issuer: cn\=issuer
     - subject: cn\=subject
+    - issuer: cn\=issuer
 
 - **DataStore / JMS Dependency**
-  Not Found
+Not Found
 
 - **Cloud Connector Dependency**
-  Not Found
+Not Found
 
 - **Common Scripts Dependency**
-  Not Found
+Not Found
 
 - **ProcessDirect ComponentType Dependency**
-  Not Found
+Not Found
