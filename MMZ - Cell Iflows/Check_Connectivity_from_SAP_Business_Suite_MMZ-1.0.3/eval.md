@@ -1,38 +1,27 @@
 **iFlowId**: Check_Connectivity_from_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.3
 
 **Best Practices Summary**
-- **Iflow Steps Naming** - 🔴 Check Required
-  The iFlow contains a "callActivity" named "Mapping". Using more descriptive names enhances readability.
-
-- **Monitoring Standard Headers** - 🔴 Check Required
-  The iFlow definition doesn't explicitly show the use of standard monitoring headers. Their usage would improve monitoring capabilities.
-
-- **Monitoring Custom Headers** - 🔴 Check Required
-  The iFlow definition doesn't explicitly show the use of custom monitoring headers. Their usage would enhance payload search and filtering.
-
-- **Iflow Metadata** - 🟢 Ok
-  The file `metainfo.prop` contains values for source, target, and description.
-
-- **Iflow Id** - 🔴 Check Required
-  The `Bundle-SymbolicName` in `MANIFEST.MF` uses underscores: `Check_Connectivity_from_SAP_Business_Suite_MMZ`. It should follow Java notation (using dots). Example: com.sap.example.connectivity.check
-
-- **Parameter Externalization** - 🟢 Ok
-  The iFlow utilizes externalized parameters (e.g., `{{ERP_enableBasicAuthentication_8}}`, `{{ERP_address_1}}`, `{{Host}}`, `{{Port}}`, etc.).
-
-- **Error Handling** - 🔴 Check Required
-  The provided BPMN XML doesn't explicitly show any error handling mechanisms within the iFlow.
-
-- **Local Script Security** - 🟢 Ok
-  The MANIFEST.MF file does not list any classes from packages com.sap.it.api.securestore or com.sap.it.api.keystore.
-
-- **Iflow Organization** - 🟢 Ok
-  The iFlow contains only one "callActivity", so the number of steps in a sequence flow is less than 10.
-
-- **Iflow Attachments** - 🟢 Ok
-  The provided information does not show the usage of `messageLogFactory` for creating attachments during Groovy scripting.
-
-- **IDoc Rules** - 🟡 Does not apply
-  The iFlow doesn't appear to be processing IDocs directly based on the provided XML.
-
-- **File Rules** - 🟡 Does not apply
-  The iFlow doesn't appear to be processing files directly based on the provided XML.
+- **Iflow Steps Naming** -> 🟢 Ok
+    - The iFlow has one callActivity named "Mapping". This is acceptable.
+- **Monitoring Standard Headers** -> 🔴 Check Required
+    - The iFlow XML does not show explicit usage of standard monitoring headers (SAP_Sender, SAP_Receiver, SAP_MessageType, SAP_ApplicationID).
+- **Monitoring Custom Headers** -> 🔴 Check Required
+    - The iFlow XML does not show explicit usage of custom headers for monitoring and payload search/filtering.
+- **Iflow Metadata** -> 🟢 Ok
+    - The metainfo.prop file contains values for source, target, and description.
+- **Iflow Id** -> 🔴 Check Required
+    - The Bundle-SymbolicName in MANIFEST.MF uses underscores. It should follow java notation (using dots and no underscores).  It should be: Check.Connectivity.from.SAP.Business.Suite.MMZ
+- **Parameter Externalization** -> 🟢 Ok
+    - The iFlow externalizes parameters such as `ERP_enableBasicAuthentication_8`, `subject`, `issuer`, `ERP_address_1`, `ERP_wsdlURL_0`, `COD_enableBasicAuthentication_6`, `artifactname`, `pr-key-alias`, `Host`, and `Port`.
+- **Error Handling** -> 🔴 Check Required
+    - The iFlow XML does not explicitly show error handling mechanisms.
+- **Local Script Security** -> 🟢 Ok
+    - No usage of `com.sap.it.api.securestore` or `com.sap.it.api.keystore` is found in the provided scripts content, if any.
+- **Iflow Organization** -> 🟢 Ok
+    - The iFlow has only one `callActivity`.
+- **Iflow Attachments** -> 🟢 Ok
+    - There's no indication of attachment creation via `messageLogFactory` in the provided scripts content, if any.
+- **IDoc Rules** -> 🟡 Does not apply
+    - The iflow does not seem to be IDoc related.
+- **File Rules** -> 🟡 Does not apply
+    - The iflow does not seem to be file related.
