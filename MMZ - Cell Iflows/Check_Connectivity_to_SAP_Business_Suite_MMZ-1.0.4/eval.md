@@ -2,41 +2,31 @@
 
 **Best Practices Summary**
 - **Iflow Steps Naming**
-
-The iFlow contains a "callActivity" named "Mapping". While this is not a default name like "Content Modifier" or "Router", it is generic. A more descriptive name reflecting the specific mapping purpose would improve readability.
+	The iFlow uses the standard name "Mapping" for a call activity. This should be renamed to a more descriptive name.
 
 - **Monitoring Standard Headers**
-
-The iFlow does not explicitly set or use standard monitoring headers like `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`, or `SAP_ApplicationID`.
+	The iFlow does not explicitly set any standard SAP monitoring headers.
 
 - **Monitoring Custom Headers**
-
-The iFlow does not appear to define or utilize any custom headers for enhanced monitoring.
+	The iFlow does not explicitly set any custom monitoring headers.
 
 - **Iflow Metadata**
-
-The `metainfo.prop` file contains metadata for source, target, and description. The description is "Check Connectivity with SAP Business Suite".  Source is "SAPCloudforCustomer" and Target is "SAPERP". This is good practice.
+	The iFlow metadata (source, target, description) is populated in the `metainfo.prop` file.
 
 - **Iflow Id**
-
-The iFlow ID (`Check_Connectivity_to_SAP_Business_Suite_MMZ`) matches the `Bundle-SymbolicName` in the `MANIFEST.MF` file.  The name is not following a java notation (com.company.iflow.ifowname)
+	The `Bundle-SymbolicName` in `MANIFEST.MF` (Check_Connectivity_to_SAP_Business_Suite_MMZ) uses underscores. It should use java package notation with dots (e.g., com.sap.connectivity.check).
 
 - **Parameter Externalization**
-
-The iFlow extensively uses externalized parameters (e.g., `{{COD_address_2}}`, `{{Protocol-Hostname-Port}}`, `{{Client}}`, `{{artifactname}}`). This is a good practice for managing configuration and sensitive information.  Authentication details and endpoint URLs are externalized.
+	The iFlow externalizes several parameters, including authentication details, URLs, and location IDs, indicated by the `{{...}}` notation in the BPMN XML.
 
 - **Error Handling**
-
-There is no explicit error handling implemented in the iflow.
+	The iFlow does not appear to implement any explicit error handling mechanisms.
 
 - **Script Security**
-
-No scripts are present in the provided information, so no script security concerns are identified.
+	There are no scripts used.
 
 - **Iflow Organization**
-
-The iFlow has a single `SequenceFlow` containing only one `callActivity` named "Mapping", so there are no readability issues based on exceeding the recommended limit of 10 activities.
+	The iFlow contains only one `callActivity` in the main sequence flow, so the number of steps is not a readability issue.
 
 - **Iflow Attachments**
-
-The iFlow does not appear to create attachments using `messageLogFactory` in Groovy scripts. Therefore, no security/resource consumption issue is identified.
+	The iFlow does not appear to be creating any attachments in Groovy scripts using `messageLogFactory`.
