@@ -3,40 +3,40 @@ markdown
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🟢 Ok\
-  All `callActivity` elements have meaningful names ("Mapping").
+    There is one "callActivity" named "Mapping", which is not a default name.
 
 - **Monitoring Standard Headers** -> 🔴 Check Required\
-  The iFlow does not explicitly define or manipulate standard monitoring headers (SAP_Sender, SAP_Receiver, etc.). Need to verify if headers are being used for monitoring.
+    The iFlow XML doesn't explicitly show usage of standard monitoring headers.
 
 - **Monitoring Custom Headers** -> 🔴 Check Required\
-  The iFlow does not explicitly define or manipulate custom monitoring headers. Need to verify if custom headers are being used for monitoring.
+    The iFlow XML doesn't explicitly show usage of custom monitoring headers.
 
 - **Iflow Metadata** -> 🟢 Ok\
-  The `metainfo.prop` file contains `description`, `source`, and `target` metadata.
+    The `metainfo.prop` file contains values for source, target, and description.
 
 - **Iflow Id** -> 🔴 Check Required\
-  The `Bundle-SymbolicName` in `MANIFEST.MF` is `Check_Connectivity_to_SAP_Business_Suite_MMZ`. This should follow Java naming conventions using dots (e.g., `com.sap.check.connectivity`).
+    The `Bundle-SymbolicName` in `MANIFEST.MF` is `Check_Connectivity_to_SAP_Business_Suite_MMZ`. It uses underscores, which is not the recommended Java notation.  It should be something like com.sap.check.connectivity.
 
 - **Parameter Externalization** -> 🟢 Ok\
-  The iFlow extensively uses externalized parameters (e.g., URLs, authentication details, client information) within the message flow properties and participant properties.
+    The iFlow uses externalized parameters (e.g., `{{COD_address_2}}`, `{{Protocol-Hostname-Port}}`) for connection details, authentication, and other configurable values.
 
 - **Error Handling** -> 🔴 Check Required\
-  The BPMN XML representation of the iFlow does not provide information about error handling implementation in the mapping step or any global exception process. Need to investigate.
+    The iFlow XML does not show any explicit error handling mechanisms (e.g., exception subprocesses, error events).
 
 - **Local Script Security** -> 🟢 Ok\
-  There are no local scripts in the provided text. Also there is no reference to com.sap.it.api.securestore or com.sap.it.api.keystore.
+    No local scripts were provided, so this check passed automatically.
 
 - **Iflow Organization** -> 🟢 Ok\
-  The iFlow has only one `callActivity` in the `SequenceFlow`, so it does not exceed the limit of 10.
+    The iFlow contains only one `callActivity` within the sequence flow.
 
 - **Iflow Attachments** -> 🟢 Ok\
-  There is no usage of `messageLogFactory` found in the provided content.
+    No local scripts were provided, and it is not possible to confirm if attachment is being created via groovy scripting.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-  The iFlow deals with SOAP messages, not IDocs.
+    The iFlow does not appear to process IDocs.
 
 - **File Rules** -> 🟡 Does not apply\
-  The iFlow does not seem to process files.
+    The iFlow does not appear to process files directly.
 
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-  The iFlow exposes an endpoint via a SOAP sender adapter (`Participant_1`). It's configured to allow Basic Authentication (`COD_enableBasicAuthentication_3=true`), which is generally considered insecure. Review if the iFlow is also using `ESBMessaging.send` role, either hardcoded in BPMN XML or configured values, that´s considered insecure. Also, even if it has Basic Auth enabled, check if it's really needed.
+    The iFlow uses a SOAP sender adapter and allows Basic Authentication (`COD_enableBasicAuthentication_3=true`). This configuration can be insecure if not properly protected. The `ESBMessaging.send` role usage check is not possible as the information is not present in the BPMN XML.
