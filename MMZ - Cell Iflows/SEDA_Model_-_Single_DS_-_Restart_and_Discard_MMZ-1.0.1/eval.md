@@ -1,32 +1,30 @@
 markdown
 **iFlowId**: SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.1
 
--
-
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🔴 Check Required\
-        - The iFlow contains several "callActivity" steps with generic names like "Step 1", "Step 2", "Custom Status", "Set Headers", "Log Async Exception". These names do not provide enough context about the specific function of each step.
-    - **Monitoring Standard Headers** -> 🟢 Ok\
-        - The iFlow utilizes standard headers such as `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType` for monitoring purposes.
-    - **Monitoring Custom Headers** -> 🟢 Ok\
-        - The iFlow makes use of the `SAP_MessageProcessingLogCustomStatus` header, to set custom message status, which enhances payload search and filtering.
-    - **Iflow Metadata** -> 🟢 Ok\
-        - The `metainfo.prop` file contains values for `description`, `source`, and `target`.
-    - **Iflow Id** -> 🔴 Check Required\
-        - The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ`. It uses underscores and hyphens, which is not in Java notation. Valid notation should be like `com.sap.package.iflow`.
-    - **Parameter Externalization** -> 🟢 Ok\
-        - The iFlow uses externalized parameters, indicated by the `{{...}}` notation in several adapter properties and script properties.  Examples include `{{Maximum Retry Interval}}`, `{{Exponential Backoff}}`, `{{Data Store Name}}`, `{{Poll Interval}}`, `{{Retry Interval}}`, `{{Lock Timeout}}`, `{{RoleName}}`,`{{Retention Threshold 4 Alerting}}`, and `{{Expiration Period}}`.
-    - **Error Handling** -> 🟢 Ok\
-        - The iFlow implements error handling using Error Event Subprocesses in multiple integration processes ("Step 1 Exception Subprocess", "Step 2 Exception Subprocess", "Step 3 Exception Subprocess", "SEDA Router Exception Subprocess", "Trigger Exception Subprocess").  These subprocesses log exceptions using the "Log Async Exception" process. Additionally, the "SEDA Router" process handles discarding messages after a maximum number of retries.
-    - **Local Script Security** -> 🟢 Ok\
-        - No usage of classes from packages `com.sap.it.api.securestore` or `com.sap.it.api.keystore` is detected.
-    - **Iflow Organization** -> 🟢 Ok\
-        - The iFlow does not appear to have any SequenceFlows exceeding 10 "callActivity" steps.
-    - **Iflow Attachments** -> 🟢 Ok\
-        - There is no evidence of attachment creation using `messageLogFactory` in the provided Groovy scripts.
-    - **IDoc Rules** -> 🟡 Does not apply\
-        - The iFlow does not seem to process IDocs.
-    - **File Rules** -> 🟡 Does not apply\
-        - The iFlow does not directly handle files.
-    - **Endpoint Rules** -> 🔴 Check Required\
-        - The iFlow exposes an endpoint with `HTTPS Sender Adapter`, check if the iflow is configured to allow Basic Auth with ESBMessaging.send.
+    - Several call activities use generic names like "Step 1", "Step 2", "Step 3", "Set Headers", and "Custom Status". More descriptive names would improve readability.
+- **Monitoring Standard Headers** -> 🟢 Ok\
+    - The iFlow uses standard headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType`.
+- **Monitoring Custom Headers** -> 🟢 Ok\
+    - The iFlow uses custom status enrichers to add `SAP_MessageProcessingLogCustomStatus`, enabling payload search and filtering based on processing status. The "Step" header, while potentially useful, would benefit from more descriptive naming.
+- **Iflow Metadata** -> 🟢 Ok\
+    - The `metainfo.prop` file contains values for source, target, and description.
+- **Iflow Id** -> 🔴 Check Required\
+    - The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ`. It should follow Java notation (e.g., `com.example.seda.model`).
+- **Parameter Externalization** -> 🟢 Ok\
+    - The iFlow externalizes parameters such as `RoleName`, `Maximum Retry Interval`, `Exponential Backoff`, `Data Store Name`, `Poll Interval`, `Retry Interval`, `Lock Timeout`, `Retention Threshold 4 Alerting`, `Expiration Period` and `MaxRetries`.
+- **Error Handling** -> 🟢 Ok\
+    - The iFlow implements error handling using error subprocesses in multiple integration processes (`Process_44`, `Process_40`, `Process_9050`, `Process_1`, `Process_36`) and logs exceptions using the "Log Async Exception" process.
+- **Local Script Security** -> 🟢 Ok\
+    - The iFlow does not appear to use classes from the `com.sap.it.api.securestore` or `com.sap.it.api.keystore` packages in its Groovy scripts.
+- **Iflow Organization** -> 🟢 Ok\
+    - The iflow does not contain any "SequenceFlow" with more than 10 "callActivity" steps.
+- **Iflow Attachments** -> 🟢 Ok\
+    - The iFlow does not appear to create attachments using `messageLogFactory` in Groovy scripts.
+- **IDoc Rules** -> 🟡 Does not apply\
+    - There is no evidence of IDoc processing in the provided iFlow definition.
+- **File Rules** -> 🟡 Does not apply\
+    - There is no evidence of file processing in the provided iFlow definition.
+- **Endpoint Rules** -> 🔴 Check Required\
+    - The iFlow exposes an endpoint with `HTTPS Sender Adapter`. The `userRole` property for `MessageFlow_12079786` is parameterized as `{{RoleName}}`. Check if the Role allows Basic Auth, or if it uses the ESBMessaging.send role, as these are insecure configurations.
