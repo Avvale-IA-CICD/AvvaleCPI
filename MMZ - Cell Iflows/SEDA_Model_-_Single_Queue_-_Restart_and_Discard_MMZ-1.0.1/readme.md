@@ -1,74 +1,66 @@
-markdown
 **iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.1
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Postman -- HTTPS --> DummyStart
-    SQUEUE -- JMS --> Start
-    Start --> ReprocessCheck
-    ReprocessCheck -- Discard --> DiscardedStatus
-    ReprocessCheck -- Yes --> StepCheck
-    StepCheck -- Step1 --> SetHeadersStep1
-    StepCheck -- Step2 --> SetHeadersStep2
-    StepCheck -- Step3 --> SetHeadersStep3
-    StepCheck -- Unknown --> DiscardedUnknownStatus
-
-    SetHeadersStep1 --> Step1
-    SetHeadersStep2 --> Step2
-    SetHeadersStep3 --> Step3
-
-    Step1 --> JMS_STEP1
-    Step2 --> JMS_STEP2
-    Step3 --> JMS_STEP3
-    DummyStart --> JMS_STEP0
-    JMS_STEP1 --> RQUEUE
-    JMS_STEP2 --> RQUEUE
-    JMS_STEP3 --> RQUEUE
-    JMS_STEP0 --> RQUEUE
-    DiscardedStatus --> LogDiscardedMessageMaxRetries
-    DiscardedUnknownStatus --> LogDiscardedMessageUnknown
-    
-    Step1 --> SetStatusStep1
-    Step2 --> SetStatusStep2
-    Step3 --> SetStatusStep3
-
-    LogDiscardedMessageMaxRetries --> DiscardedMaxRetries
-    LogDiscardedMessageUnknown --> DiscardedUnknown
-    SetStatusStep1 --> End
-    SetStatusStep2 --> End
-    SetStatusStep3 --> End
+    Postman -- HTTPS --> StartEvent_12079806((Start))
+    SQUEUE -- JMS --> StartEvent_2((Start))
+    StartEvent_2 --> ExclusiveGateway_9098{Reprocess?}
+    ExclusiveGateway_9098 -- Yes --> ExclusiveGateway_12{Step?}
+    ExclusiveGateway_9098 -- Discard --> CallActivity_9101[Discaded]
+    CallActivity_9101 --> CallActivity_12079775[Log Discarded Message]
+    CallActivity_12079775 --> EndEvent_9104((Discarded MaxRetries))
+    ExclusiveGateway_12 -- Step1 --> CallActivity_12079818[Set Headers]
+    ExclusiveGateway_12 -- Step 2 --> CallActivity_12079821[Set Headers]
+    ExclusiveGateway_12 -- Step 3 --> CallActivity_12079824[Set Headers]
+    ExclusiveGateway_12 -- Unknown --> CallActivity_20[Custom Status]
+    CallActivity_20 --> CallActivity_12079827[Log Discarded Message]
+    CallActivity_12079827 --> EndEvent_12079826((Discarded Unknown))
+    CallActivity_12079818 --> CallActivity_15["Step 1"]
+    CallActivity_15 --> ServiceTask_56[Next Step]
+    ServiceTask_56 --> CallActivity_9071[Custom Status]
+    CallActivity_9071 --> EndEvent_2((End))
+    CallActivity_12079821 --> CallActivity_18["Step 2"]
+    CallActivity_18 --> ServiceTask_9069[Next Step]
+    ServiceTask_9069 --> CallActivity_9077[Custom Status]
+    CallActivity_9077 --> EndEvent_2
+    CallActivity_12079824 --> CallActivity_21["Step 3"]
+    CallActivity_21 --> CallActivity_9074[Custom Status]
+    CallActivity_9074 --> EndEvent_2
+    CallActivity_12079818 --> CallActivity_15
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) pattern with a single queue. It receives messages, processes them in multiple steps, and handles exceptions. Messages can be reprocessed, and discarded after a maximum number of retries or if the receiver is not found.
+The iFlow implements a SEDA (Staged Event-Driven Architecture) pattern with a single queue. It receives messages, processes them in multiple steps, and handles exceptions. Messages exceeding the maximum retry count or having an unknown step are discarded.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - SQUEUE: JMS, EndpointSender
-    - Postman: HTTPS, EndpointSender
-    - RQUEUE: JMS, EndpointRecevier
+    - SQUEUE (JMS, EndpointSender)
+    - RQUEUE (JMS, EndpointRecevier)
+    - Postman (HTTPS, EndpointSender)
 
 - **Key steps**
-    1.  Receive message via HTTPS or JMS.
-    2.  Set headers for the initial step.
-    3.  Process message in Step 1, Step 2, and Step 3 (local integration processes).
-    4.  Route messages based on the 'Step' property.
-    5.  If an error occurs in any step, log the exception and set a custom status.
-    6.  Discard messages that exceed the maximum number of retries or have an unknown step.
+    1. Receives message via JMS adapter from SQUEUE.
+    2. Checks retry count and discards message if it exceeds the maximum retries.
+    3. Routes message to Step1, Step2 or Step3 based on the Step property. If Step property is unkown, the message is discarded.
+    4. Each Step process calls a local integration process which sets Headers and calls another process.
+    5. JMS adapter send the message to RQUEUE after each Step.
+    6. If an exception occurs within the Step subprocesses, a custom status is created and an exception is logged asynchronously.
+    7. If the message is discarded, a custom status is set, a log is created, and the message is discarded.
 
 - **Message transformation**
-    - Enricher components are used to create and delete message headers and properties.
-    - Groovy scripts are used to log exceptions and discarded messages.
+    - Enricher is used to set headers and properties for routing and logging.
+    - Groovy scripts are used for logging exceptions and discarded messages.
+    - Content Modifier to set Header and Body
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `MaxRetries`: 10 - Maximum number of retries before discarding a message.
-    - `SEDA_MAIN_QUEUE`: SEDA_MODEL_MMZ - Name of the main JMS queue.
-    - `Expiration Period`: 7 - Expiration period for messages.
-    - `Maximum Retry Interval`: 1440 - Maximum retry interval.
-    - `Retention Threshold 4 Alerting`: 1 - Retention threshold for alerting.
-    - `Retry Interval`: 15 - Retry interval.
-    - `Number of Concurrent Processes`: 1 - Number of concurrent processes.
+    - `MaxRetries`: 10 (Maximum number of retries before discarding a message)
+    - `SEDA_MAIN_QUEUE`: SEDA_MODEL_MMZ (The name of the main JMS queue)
+    - `Expiration Period`: 7 (Expiration period for messages in days)
+    - `Maximum Retry Interval`: 1440 (Maximum interval between retries in minutes)
+    - `Retention Threshold 4 Alerting`: 1 (Retention threshold for alerting)
+    - `Retry Interval`: 15 (Interval between retries in minutes)
+    - `Number of Concurrent Processes`: 1 (Number of concurrent processes for the JMS receiver adapter)
 
 - **DataStore / JMS Dependency**
 Yes
@@ -77,8 +69,8 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-    - Log_Exception_Async.groovy (Groovy_Logging_Scripts)
-    - Log_Discarded_Message.groovy (Groovy_Logging_Scripts)
+    - Groovy_Logging_Scripts: Log_Discarded_Message.groovy
+    - Groovy_Logging_Scripts: Log_Exception_Async.groovy
 
 - **ProcessDirect ComponentType Dependency**
 Not Found
