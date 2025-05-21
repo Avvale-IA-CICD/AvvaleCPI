@@ -2,40 +2,40 @@
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🔴 Check Required\
-    The iFlow contains `callActivity` steps with generic names like "Step 1", "Step 2", "Step 3", "Set Headers" and "Custom Status". This makes it harder to understand the flow's purpose at a glance.
+The iflow contains "callActivity" steps with standard names such as "Custom Status", "Set Headers", "Next Step", "Discaded" and "Log Async Exception".
 
 - **Monitoring Standard Headers** -> 🟢 Ok\
-    The iFlow uses standard headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType` for monitoring.
+The iflow utilizes standard headers like SAP_Sender, SAP_Receiver and SAP_MessageType in multiple "callActivity" steps.
 
 - **Monitoring Custom Headers** -> 🟢 Ok\
-    The iFlow leverages Custom Headers for custom status updates, such as `SAP_MessageProcessingLogCustomStatus`.
+The iflow utilizes custom statuses for monitoring using the SAP_MessageProcessingLogCustomStatus header.
 
 - **Iflow Metadata** -> 🟢 Ok\
-    The `metainfo.prop` file contains values for source, target, and description.
+The `metainfo.prop` file contains values for source, target and description.
 
 - **Iflow Id** -> 🔴 Check Required\
-    The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ`. It uses underscores and hyphens instead of java notation with dots (e.g., `com.example.seda.flow`).
+The Bundle-SymbolicName in `MANIFEST.MF` (SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ) uses underscores and hyphens, which is not the recommended java notation.
 
 - **Parameter Externalization** -> 🟢 Ok\
-    The iFlow utilizes externalized parameters (e.g., `{{SEDA_MAIN_QUEUE}}`, `{{Retention Threshold 4 Alerting}}`, `{{Expiration Period}}`, `{{Number of Concurrent Processes}}`, `{{Maximum Retry Interval}}`, `{{Retry Interval}}`, `{{MaxRetries}}`) for configuration, improving maintainability.
+The iflow externalizes several important parameters such as queue names and retry intervals using placeholders like `{{SEDA_MAIN_QUEUE}}`, `{{Number of Concurrent Processes}}`, `{{Maximum Retry Interval}}`, `{{Retry Interval}}`, `{{Retention Threshold 4 Alerting}}`, `{{Expiration Period}}` and `{{MaxRetries}}`.
 
 - **Error Handling** -> 🟢 Ok\
-    The iFlow includes error handling using error sub-processes and logging.
+The iflow implements error handling using error sub-processes in several integration processes (Step 1, Step 2, Step 3 and SEDA Router). These sub-processes log exceptions and set custom statuses.
 
 - **Local Script Security** -> 🟢 Ok\
-    The iFlow does not appear to use classes from `com.sap.it.api.securestore` or `com.sap.it.api.keystore` in the provided scripts.
+The iflow does not appear to be using classes from `com.sap.it.api.securestore` or `com.sap.it.api.keystore`.
 
 - **Iflow Organization** -> 🟢 Ok\
-    The iFlow doesn't seem to have more than 10 `callActivity` elements in a single `SequenceFlow`.
+The iflow does not use more than 10 "callActivity" in any single "SequenceFlow".
 
 - **Iflow Attachments** -> 🟢 Ok\
-    The iFlow does not appear to be creating attachments using `messageLogFactory` during groovy scripting.
+The provided content doesn't indicate that the developer is creating attachments for successful messages using `messageLogFactory`.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-    The iFlow doesn't seem to be processing IDocs.
+The iflow does not appear to be processing IDocs, so this rule does not apply.
 
 - **File Rules** -> 🟡 Does not apply\
-    The iFlow doesn't seem to be processing files.
+The iflow does not appear to be processing files, so this rule does not apply.
 
 - **Endpoint Rules** -> 🔴 Check Required\
-    The iFlow exposes an endpoint with an HTTPS Sender Adapter (`Participant_12079805`). It uses `ESBMessaging.send` role and has `enableBasicAuthentication` set to `false`, which is better than enabling it. A deeper review of the authentication and authorization configuration is advised.
+The iflow exposes an endpoint with HTTPS Sender Adapter (`Participant_12079805`) and `senderAuthType` is configured with value `RoleBased` and `userRole` with `ESBMessaging.send`. It requires a check if the `enableBasicAuthentication` property is set to `true` and if not, it would be considered a security issue.
