@@ -1,38 +1,38 @@
 **iFlowId**: Check_Connectivity_from_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.3
 
 **Best Practices Summary**
-- **Iflow Steps Naming** -> 🟢 Ok
-    No default names like "Sender", "Receiver", "Content Modifier", etc. are used for the callActivity. The callActivity is named "Mapping".
+- **Iflow Steps Naming** -> 🔴 Check Required
+    The iFlow contains a "callActivity" named "Mapping". While not a default name like "Content Modifier", it is a generic name. A more descriptive name would improve understanding.
 
 - **Monitoring Standard Headers** -> 🔴 Check Required
-    The iFlow definition doesn't explicitly show the usage of standard monitoring headers (SAP_Sender, SAP_Receiver, SAP_MessageType, SAP_ApplicationID). Manual review is required to confirm if these headers are used within scripts or mapping.
+    The provided information doesn't indicate the use of standard headers for monitoring. Checking the iFlow implementation is required to confirm whether SAP_Sender, SAP_Receiver, SAP_MessageType, or SAP_ApplicationID are being used.
 
 - **Monitoring Custom Headers** -> 🔴 Check Required
-    The iFlow definition does not show explicit usage of custom headers. Manual review is required to check for custom header usage inside the mapping or any scripts (none provided).
+    The provided information doesn't show any custom headers used for monitoring. This needs verification within the iFlow's logic.
 
 - **Iflow Metadata** -> 🟢 Ok
-    The `metainfo.prop` file contains values for source (SAPERP), target (SAPCloudforCustomer) and description (Check Connectivity with SAP Business Suite).
+    The `metainfo.prop` file contains values for source, target, and description.
 
 - **Iflow Id** -> 🔴 Check Required
-    The `MANIFEST.MF` shows `Bundle-SymbolicName: Check_Connectivity_from_SAP_Business_Suite_MMZ`. According to best practices, the symbolic name should follow Java notation (using dots instead of underscores or hyphens). This needs to be changed to something like `com.sap.connectivity.check`.
+    The `Bundle-SymbolicName` in `MANIFEST.MF` uses underscores: `Check_Connectivity_from_SAP_Business_Suite_MMZ`. It should be in Java notation using dots (e.g., `com.sap.connectivity.check`).
 
 - **Parameter Externalization** -> 🟢 Ok
-    The iFlow uses externalized parameters denoted by double curly braces `{{...}}` for adapter configurations (e.g., addresses, credentials, authentication).
+    The iFlow uses externalized parameters denoted by `{{...}}` for various configuration values, like addresses, credentials, and authentication settings.
 
 - **Error Handling** -> 🔴 Check Required
-    The provided BPMN XML does not show explicit error handling. A manual check is needed to verify if any error handling is implemented within the mapping or the integration process.
+    The provided information does not indicate any error handling implemented within the iflow. This needs verification within the iFlow's logic.
 
 - **Local Script Security** -> 🟢 Ok
-    No local scripts are included, and the `MANIFEST.MF` doesn't suggest imports from `com.sap.it.api.securestore` or `com.sap.it.api.keystore`.
+    No scripts are provided. Therefore, no usage of `com.sap.it.api.securestore` or `com.sap.it.api.keystore` is detected.
 
 - **Iflow Organization** -> 🟢 Ok
-    There is only one call activity in the iFlow.
+    The iFlow has a simple structure with only one `callActivity` between the start and end events.
 
 - **Iflow Attachments** -> 🟢 Ok
-    No scripts are provided, and therefore there are no attachments created using `messageLogFactory`.
+    No scripts are provided. Therefore, no attachment creation using `messageLogFactory` is detected.
 
 - **IDoc Rules** -> 🟡 Does not apply
-    The iFlow description refers to connectivity check, and the SOAP adapter configuration doesn't mention anything about IDocs.
+    The iFlow does not seem to process IDocs based on the provided information.
 
 - **File Rules** -> 🟡 Does not apply
-    The iFlow doesn't seem to be processing files directly based on the adapters used.
+    The iFlow does not seem to process files directly based on the provided information.
