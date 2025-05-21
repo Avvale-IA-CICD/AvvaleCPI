@@ -4,84 +4,103 @@ markdown
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Postman --> HTTPS_Adapter --> DummyStart
-    DummyStart --> JMS_STEP0{Save Initial Msg}
-    JMS_STEP0 --> RQUEUE
-    Start --> Reprocess{Reprocess?}
-    Reprocess -- Yes --> StepCheck{Step?}
-    Reprocess -- Discard --> DiscardedMessage{Discaded}
-    DiscardedMessage --> LogDiscarded{Log Discarded Message}
-    LogDiscarded --> DiscardedMaxRetries[Discarded MaxRetries]
-    StepCheck -- Step1 --> SetHeadersStep1{Set Headers}
-    StepCheck -- Step 2 --> SetHeadersStep2{Set Headers}
-    StepCheck -- Step 3 --> SetHeadersStep3{Set Headers}
-    StepCheck -- Unknown --> DiscardedUnknownStep{Custom Status}
-    DiscardedUnknownStep --> LogDiscardedUnknown{Log Discarded Message}
-    LogDiscardedUnknown --> DiscardedUnknown[Discarded Unknown]
-    SetHeadersStep1 --> Step1
-    SetHeadersStep2 --> Step2
-    SetHeadersStep3 --> Step3
-    Step1 --> NextStep1{Next Step}
-    Step2 --> NextStep2{Next Step}
-    Step3 --> SetCustomStatusStep3{Custom Status}
-    NextStep1 --> CustomStatusStep1{Custom Status}
-    NextStep2 --> CustomStatusStep2{Custom Status}
-    SetCustomStatusStep3 --> End
-    CustomStatusStep1 --> End
-    CustomStatusStep2 --> End
-    NextStep1 --> RQUEUE_JMS_Adapter --> RQUEUE
-    NextStep2 --> RQUEUE_JMS_Adapter2 --> RQUEUE
-    Step1 --> Exception1((Exception Subprocess 1))
-    Step2 --> Exception2((Exception Subprocess 2))
-    Step3 --> Exception3((Exception Subprocess 3))
-    Start --> Reprocess
-    Reprocess --> StepCheck
+    Postman --> HTTPS[HTTPS Adapter] --> DummyStart
+    DummyStart --> SaveInitialMsg
+    SaveInitialMsg --> SetHeaders0
+    SetHeaders0 --> JMS_STEP0[JMS Adapter] --> RQUEUE
+    
+    SQUEUE --> JMS_DISPATCHER[JMS Adapter] --> StartEvent
+    StartEvent --> Reprocess
+    Reprocess -- Yes --> StepCheck
+    Reprocess -- Discard --> DiscardedStatus
+    DiscardedStatus --> LogDiscardedMessage
+    LogDiscardedMessage --> DiscardedMaxRetries
+
+    StepCheck -- Step1 --> SetHeaders1
+    StepCheck -- Step2 --> SetHeaders2
+    StepCheck -- Step3 --> SetHeaders3
+    StepCheck -- Unknown --> DiscardedUnknown
+
+    SetHeaders1 --> Step1
+    SetHeaders2 --> Step2
+    SetHeaders3 --> Step3
+    DiscardedUnknown --> LogDiscardedMessage2
+    LogDiscardedMessage2 --> DiscardedUnknownError
+
+    Step1 --> JMS_STEP1[JMS Adapter] --> RQUEUE
+    Step2 --> JMS_STEP2[JMS Adapter] --> RQUEUE
+    Step3 --> JMS_STEP3[JMS Adapter] --> RQUEUE
+
+    JMS_STEP1 --> CustomStatus1
+    JMS_STEP2 --> CustomStatus2
+    JMS_STEP3 --> CustomStatus3
+
+    CustomStatus1 --> EndEvent
+    CustomStatus2 --> EndEvent
+    CustomStatus3 --> EndEvent
+
+    subgraph Step1
+        Start1 --> PrepareStep2
+        PrepareStep2 --> End1
+    end
+
+    subgraph Step2
+        Start2 --> PrepareStep3
+        PrepareStep3 --> End2
+    end
+
+    subgraph Step3
+        Start3 --> TestException
+        TestException --> End3
+    end
 ```
 **BPMN Diagram**
 
 ![BPMN Diagram](./SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ-1.0.1.png "BPMN Diagram")
 
 **Functional Summary**
-- **Brief description of the iFlow**
-  This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) pattern with a single queue. It receives a message, processes it through multiple steps, and then sends it to a JMS queue.  It also includes error handling, retry mechanisms, and message discarding based on the number of retries or unknown steps.
+-   **Brief description of the iFlow**
+    This iFlow implements a SEDA (Staged Event-Driven Architecture) pattern with a single queue. It receives a message, processes it through several steps (Step 1, Step 2, Step 3), and then either sends it to the next step or discards it based on the number of retries. It includes exception handling and logging.
 
-- **Involved systems with Adapters Type and Endpoint Type**
-  - SQUEUE: JMS (EndpointSender)
-  - Postman: HTTPS (EndpointSender)
-  - RQUEUE: JMS (EndpointRecevier)
+-   **Involved systems with Adapters Type and Endpoint Type**
+    -   SQUEUE: JMS (EndpointSender)
+    -   Postman: HTTPS (EndpointSender)
+    -   RQUEUE: JMS (EndpointRecevier)
 
-- **Key steps**
-  1. Receive a message via HTTPS from Postman.
-  2. Save the initial message and set headers.
-  3. Route the message through steps 1, 2, and 3 based on the `Step` property.
-  4. Each step prepares the message content, executes a direct call to a local integration process, and updates message processing log custom status.
-  5.  If message processing fails during the steps, an exception subprocess logs the async exception.
-  6. If the number of retries exceeds the maximum allowed, the message is discarded and logged. If the message's 'Step' property does not match any route conditions (Step1, Step2, Step3), it is also discarded.
-  7. The final message is sent to a JMS queue.
+-   **Key steps**
 
-- **Message transformation**
-  - Setting of headers for sender, receiver, and message type.
-  - Enrichment of message processing log with custom statuses.
-  - The content of each step is wrapped into Envelope/MessageB64
+    1.  Receive message via HTTPS from Postman.
+    2.  Save Initial message
+    3.  Set Headers with sender, receiver and messagetype info
+    4.  Determine if message needs to be reprocessed or discarded.
+    5.  Route the message to Step 1, Step 2 or Step 3 based on the "Step" property.
+    6.  Each step executes and prepares the message for the next step
+    7.  If message reaches the max number of retries, discard it with an error.
+    8.  If the "Step" property is not found, discard it with an error.
+    9.  Custom statuses enriched at different stages
 
-- **Externalized parameters list, configured values and their descriptions**
-  - `MaxRetries`: 10 - Maximum number of retries before discarding the message.
-  - `SEDA_MAIN_QUEUE`: SEDA_MODEL_MMZ - Name of the JMS queue used for message processing.
-  - `Expiration Period`: 7 - Expiration period for the JMS message.
-  - `Maximum Retry Interval`: 1440 - Maximum retry interval in minutes.
-  - `Retention Threshold 4 Alerting`: 1 - Retention threshold for alerting.
-  - `Retry Interval`: 15 - Retry interval in minutes.
-  - `Number of Concurrent Processes`: 1 - Number of concurrent processes for the JMS adapter.
+-   **Message transformation**
+    -   Prepare Step 2/3: Enricher steps that set the "Step" property to "Step2" or "Step3" respectively and also add a message to the body to be processed in the next step.
+    -   Set Headers: Enricher steps that sets the header SAP_Sender, SAP_Receiver, SAP_MessageType with the "Step" property and constant values
 
-- **DataStore / JMS Dependency**
-  Yes
+-   **Externalized parameters list, configured values and their descriptions**
+    -   `MaxRetries`: 10 - Maximum number of retries before discarding the message.
+    -   `SEDA_MAIN_QUEUE`: SEDA_MODEL_MMZ - Name of the JMS queue used for message exchange.
+    -   `Expiration Period`: 7 - Expiration period for messages in days.
+    -   `Maximum Retry Interval`: 1440 - Maximum retry interval in minutes.
+    -   `Retention Threshold 4 Alerting`: 1 - Retention threshold for alerting.
+    -   `Retry Interval`: 15 - Retry interval in minutes.
+    -   `Number of Concurrent Processes`: 1 - Number of concurrent processes.
 
-- **Cloud Connector Dependency**
-  Not Found
+-   **DataStore / JMS Dependency**
+    Yes
 
-- **Common Scripts Dependency**
-  - Groovy_Logging_Scripts: Log_Discarded_Message.groovy
-  - Groovy_Logging_Scripts: Log_Exception_Async.groovy
+-   **Cloud Connector Dependency**
+    Not Found
 
-- **ProcessDirect ComponentType Dependency**
-  Not Found
+-   **Common Scripts Dependency**
+    -   Log_Discarded_Message.groovy, scriptBundleId: Groovy_Logging_Scripts
+    -   Log_Exception_Async.groovy, scriptBundleId: Groovy_Logging_Scripts
+
+-   **ProcessDirect ComponentType Dependency**
+    Not Found
