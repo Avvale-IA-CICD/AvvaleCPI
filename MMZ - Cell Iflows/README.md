@@ -8,4 +8,5 @@ This package contains the following integration flows:
 | ------------- | ------- | ------------- | ------------- | ---------------------------------- | ------------ |
 | SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ | 1.0.1 | Postman | Dummy | Demo SEDA Iflow with JMS | [View Details](SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ-1.0.1/readme.md) |
 | SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ | 1.0.1 | Postman | Dummy | Demo SEDA Iflow with DS | [View Details](SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ-1.0.1/readme.md) |
+| Check_Connectivity_to_SAP_Business_Suite_MMZ | 1.0.4 | SAPCloudforCustomer | SAPERP | Check Connectivity with SAP Business Suite | [View Details](Check_Connectivity_to_SAP_Business_Suite_MMZ-1.0.4/readme.md) |
 <!-- IFLOW_TABLE_END -->
