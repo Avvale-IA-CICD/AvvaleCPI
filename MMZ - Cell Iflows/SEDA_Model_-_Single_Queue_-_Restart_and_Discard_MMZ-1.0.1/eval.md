@@ -1,41 +1,41 @@
 **iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.1
 
 **Best Practices Summary**
-- **Iflow Steps Naming** -> 🔴 Check Required\
-  The iFlow contains `callActivity` elements with generic names like "Step 1", "Step 2", "Custom Status", which doesn't provide enough context about their functionality. Also exist one "Next Step" name in service tasks.
+- **Iflow Steps Naming** -> 🟢 Ok\
+    The iFlow steps have meaningful names (e.g., Step 1, Prepare Step 2, Log Async Exception). No default names like "Sender", "Receiver", "Content Modifier", etc., are present.
 
 - **Monitoring Standard Headers** -> 🟢 Ok\
-  The iFlow uses standard headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType` for monitoring in the "Dummy Start" and "SEDA Router" processes.
+    The iFlow uses standard headers for monitoring, including `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType`.
 
 - **Monitoring Custom Headers** -> 🟢 Ok\
-  The iFlow uses custom headers such as `SAP_MessageProcessingLogCustomStatus` to enhance payload search and filtering.
+    The iFlow uses custom headers for monitoring such as `SAP_MessageProcessingLogCustomStatus` for providing more context on the message processing. Also, `Step` property is used as Sender in exception flow.
 
 - **Iflow Metadata** -> 🟢 Ok\
-  The `metainfo.prop` file is populated with `source`, `target`, and `description` values.
+    The `metainfo.prop` file contains `description`, `source`, and `target` metadata.
 
 - **Iflow Id** -> 🔴 Check Required\
-  The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ`. It should follow Java naming conventions (e.g., `com.example.seda.model`).
+    The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ`. This does not follow the recommended Java package naming convention (e.g., `com.sap.something.something`). It should use dots instead of underscores and hyphens.
 
 - **Parameter Externalization** -> 🟢 Ok\
-  The iFlow externalizes parameters like `SEDA_MAIN_QUEUE`, `Retry Interval`, `MaxRetries`, etc., via Config Parameters.
+    The iFlow externalizes important parameters like queue names (`SEDA_MAIN_QUEUE`), retry intervals, and maximum retries.
 
 - **Error Handling** -> 🟢 Ok\
-  The iFlow includes error handling using Error Subprocesses in multiple processes (Step 1, Step 2, Step 3, SEDA Router and Dummy Start). It also logs exceptions using `Log Async Exception` script.
+    The iFlow implements error handling using error subprocesses, custom statuses, and logging of exceptions in several processes and subprocesses.
 
 - **Local Script Security** -> 🟢 Ok\
-  The provided code snippets for the groovy scripts do not include any classes from the specified securestore or keystore packages (`com.sap.it.api.securestore` or `com.sap.it.api.keystore`).
+    The iFlow does not use classes from the `com.sap.it.api.securestore` or `com.sap.it.api.keystore` packages in the provided script.
 
 - **Iflow Organization** -> 🟢 Ok\
-  There are no sequence flows with more than 10 `callActivity` elements.
+    There are no sequences with more than 10 "callActivity" in the same "SequenceFlow".
 
 - **Iflow Attachments** -> 🟢 Ok\
-  The iFlow does not appear to be creating attachments for successful messages. The messageLogFactory is not in use in the local scripts.
+    The iflow exception subprocess is calling the "Log Async Exception" process that should be making use of class messageLogFactory during groovy scripting. The usage is in exception process only so this does not represent a security/resource consumption issue.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-  The iFlow does not explicitly handle IDocs.
+    The iFlow doesn't appear to handle IDocs, so this rule doesn't apply.
 
 - **File Rules** -> 🟡 Does not apply\
-  The iFlow does not explicitly handle files.
+    The iFlow doesn't appear to handle files, so this rule doesn't apply.
 
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-  The iFlow exposes an HTTPS endpoint using the HTTPS sender adapter. It is configured to use `RoleBased` authentication and `ESBMessaging.send` role, which might be considered insecure and requires further investigation to ensure proper authorization and authentication mechanisms are in place. Also, Basic Authentication is disabled, which is good.
+    The iFlow exposes an endpoint with HTTPS Sender Adapter and is configured to allow RoleBased sender authentication. Since the userRole `ESBMessaging.send` is hardcoded in the BPMN XML, that´s considered insecure.
