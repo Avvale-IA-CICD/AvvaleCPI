@@ -1,4 +1,3 @@
-markdown
 **iFlowId**: Check_Connectivity_to_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.4
 
 **Best Practices Summary**
