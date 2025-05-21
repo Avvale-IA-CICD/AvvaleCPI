@@ -4,80 +4,88 @@ markdown
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Postman -->|HTTPS| DummyStart
-    DS -->|DataStoreConsumer| ReprocessCheck
-    ReprocessCheck -- Yes --> StepCheck
-    ReprocessCheck -- Discard --> Discarded
-    Discarded --> LogDiscardedMessage
-    LogDiscardedMessage --> EndDiscarded
-    StepCheck -- Step1 --> SetHeaders1
-    StepCheck -- Step2 --> SetHeaders2
-    StepCheck -- Step3 --> SetHeaders3
-    StepCheck -- Unknown --> UnknownStep
-    SetHeaders1 --> Step1
-    SetHeaders2 --> Step2
-    SetHeaders3 --> Step3
-    Step1 --> DBStorageStep2
-    Step2 --> DBStorageStep3
-    Step3 --> CustomStatus3
-    DBStorageStep2 --> CustomStatus1
-    DBStorageStep3 --> CustomStatus2
+    Postman[Postman] --> HTTPS(Start0)
+    DS[DS] --> DataStoreConsumer(Start)
+    DataStoreConsumer(Start) --> Reprocess{Reprocess?}
+    HTTPS(Start0) --> Reprocess
+
+    Reprocess{Reprocess?} -- Yes --> StepGateway{Step?}
+    Reprocess -- Discard --> Discaded[Discaded]
+    Discaded --> LogDiscarded[Log Discarded Message]
+    LogDiscarded --> DiscardedMaxRetries(EndEvent)
+
+    StepGateway -- Step1 --> SetHeaders1[Set Headers]
+    StepGateway -- Step 2 --> SetHeaders2[Set Headers]
+    StepGateway -- Step 3 --> SetHeaders3[Set Headers]
+    StepGateway -- Unknown --> UnknownStep[Custom Status]
+    UnknownStep --> End
+
+    SetHeaders1 --> Step1[Step 1]
+    SetHeaders2 --> Step2[Step 2]
+    SetHeaders3 --> Step3[Step 3]
+
+    Step1 --> StoreStep1[Step1]
+    Step2 --> StoreStep2[Step2]
+    StoreStep1 --> CustomStatus1[Custom Status]
+    StoreStep2 --> CustomStatus2[Custom Status]
+
     CustomStatus1 --> End
     CustomStatus2 --> End
-    CustomStatus3 --> End
-    UnknownStep --> End
-    DummyStart --> SetHeaders0
-    SetHeaders0 --> DBStorageStep1
-    DBStorageStep1 --> CustomStatus0
-    CustomStatus0 --> End
 
+    Step1 --> StoreStep1
+    Step2 --> StoreStep2
+    Step3 --> Step3Call[Step 3]
+
+    Step3Call --> CustomStatus3[Custom Status]
+    CustomStatus3 --> End
 ```
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model with a single DataStore, restart, and discard mechanism. It receives messages either from an HTTPS endpoint or a DataStore, processes them through several steps, and stores the messages in a DataStore. It includes retry logic and discards messages exceeding the maximum retry count.
+  This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model for processing messages. It reads messages from a DataStore, processes them through multiple steps, and stores them back in the DataStore after each step. The iFlow also handles exceptions and discards messages after a maximum number of retries.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Postman - HTTPS - Sender
-    - DS - DataStoreConsumer - Sender
+  - Postman (HTTPS, EndpointSender)
+  - DS (DataStoreConsumer, EndpointSender)
 
 - **Key steps**
- 1. Receive message from HTTPS or DataStore.
- 2. Determine if the message needs to be reprocessed based on retry counts.
- 3. If MaxRetries has been exceeded, discard the message.
- 4. Based on the Step header value call Step 1, Step 2 or Step 3 processes.
- 5. In each Step process prepare the following step with Prepare Step (X) and create/set header with "Step" and the next step.
- 6. Each step process saves the data into the DataStore with Step(X) DBStorage.
- 7. After completing each step, a custom status is created.
- 8. If any exceptions occur during the steps, the "Log Async Exception" process is called and the exception is logged.
+ 1. Receive message either via HTTPS from Postman or from DataStore.
+ 2. Check if MaxRetries has been reached, Discard Message if true.
+ 3. Route the message based on the 'Step' header.
+ 4. Step 1: Prepare Step 2, store in datastore, set custom status, log.
+ 5. Step 2: Prepare Step 3, store in datastore, set custom status, log.
+ 6. Step 3: Execute a groovy script to simulate exception or success. Set custom status, log.
+ 7. Log Async Exception in case of exceptions.
+ 8. Messages are stored in the DataStore after each step.
 
 - **Message transformation**
-    - Content enrichers are used to set message headers.
-    - Groovy scripts are used for logging and potentially other custom logic (script1.groovy in Step3, Log_Discarded_Message.groovy, Log_Exception_Async.groovy).
+  - Enrichers are used to set headers (SAP_Sender, SAP_Receiver, SAP_MessageType, Step) and custom status (SAP_MessageProcessingLogCustomStatus) at various points in the iFlow.
+  - Constant values are added to the header for routing and status tracking.
+  - Groovy scripts are used in 'Test Throw Exception' and 'Log Async Exception' for exception handling and logging.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - MaxRetries: 3 - Maximum number of retries before discarding the message.
-    - SEDA_MAIN_QUEUE: SEDA_MODEL_MMZ - JMS Queue Name. (Not Used, as the JMS is not configured, just configured as Required JMS in Transactional Handling)
-    - Retention Threshold 4 Alerting: 1 - Retention threshold for alerting.
-    - Retry Interval: 15 - Retry interval in minutes.
-    - Number of Concurrent Processes: 1 - The number of concurrent processes allowed.
-    - Data Store Name: SEDA_MODEL_MMZ - Name of the DataStore.
-    - RoleName: ESBMessaging.send - Role required for sending messages.
-    - Exponential Backoff: 1 - Flag to enable exponential backoff for retries.
-    - Expiration Period: 7 - Expiration period for messages in days.
-    - Lock Timeout: 10 - Lock timeout in seconds.
-    - Maximum Retry Interval: 1440 - Maximum retry interval in minutes.
-    - Poll Interval: 10 - Poll interval in minutes for DataStore Consumer
+  - MaxRetries: 3 - Maximum number of retries before discarding a message.
+  - SEDA_MAIN_QUEUE: SEDA_MODEL_MMZ - Name of the JMS queue used in the iFlow, not applicable because no JMS adapter is in use.
+  - Retention Threshold 4 Alerting: 1 - Retention threshold for alerting.
+  - Retry Interval: 15 - Interval between retry attempts (in minutes).
+  - Number of Concurrent Processes: 1 - Number of concurrent processes.
+  - Data Store Name: SEDA_MODEL_MMZ - Name of the DataStore used for persistence.
+  - RoleName: ESBMessaging.send - Role required for sending messages.
+  - Exponential Backoff: 1 - Enable Exponential Backoff.
+  - Expiration Period: 7 - Expiration period for stored messages (in days).
+  - Lock Timeout: 10 - Lock timeout.
+  - Maximum Retry Interval: 1440 - Maximum retry interval (in minutes).
+  - Poll Interval: 10 - Poll interval (in minutes).
 
 - **DataStore / JMS Dependency**
-Yes
+  Yes
 
 - **Cloud Connector Dependency**
-Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-    - Log_Discarded_Message.groovy - Groovy_Logging_Scripts
-    - Log_Exception_Async.groovy - Groovy_Logging_Scripts
+  - Log_Discarded_Message.groovy, scriptBundleId: Groovy_Logging_Scripts
+  - Log_Exception_Async.groovy, scriptBundleId: Groovy_Logging_Scripts
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+  Not Found
