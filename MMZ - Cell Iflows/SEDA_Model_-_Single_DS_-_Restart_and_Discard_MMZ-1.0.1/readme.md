@@ -5,102 +5,104 @@
 graph LR
     Postman[Postman]
     DS[DataStore]
-    StartEvent[Start Event]
-    StepCheck[Reprocess?]
-    StepDecision[Step?]
-    Step1SetHeaders[Set Headers Step1]
-    Step2SetHeaders[Set Headers Step2]
-    Step3SetHeaders[Set Headers Step3]
-    Step1[Step 1]
-    Step2[Step 2]
-    Step3[Step 3]
-    Step1Status[Custom Status Step1]
-    Step2Status[Custom Status Step2]
-    Step3Status[Custom Status Step3]
-    Step1DB[Step1 - DataStore]
-    Step2DB[Step2 - DataStore]
-    Step3DB[Step3 - DataStore]
-    Discard[Discaded]
-    LogDiscard[Log Discarded Message]
-    EndDiscard[Discarded MaxRetries]
-    UnknownStep[Unknown Step]
-    EndEvent[End Event]
+    StartEvent_12079784((Start Event))
+    StartEvent_2((Start Event))
+    ExclusiveGateway_9098{Reprocess?}
+    ExclusiveGateway_12{Step?}
+    CallActivity_12079790[Set Headers Step1]
+    CallActivity_12079792[Set Headers Step2]
+    CallActivity_12079794[Set Headers Step3]
+    CallActivity_15[Step 1]
+    CallActivity_18[Step 2]
+    CallActivity_21[Step 3]
+    CallActivity_12079780[Step2]
+    CallActivity_12079781[Step3]
+    CallActivity_9071[Custom Status Step1]
+    CallActivity_9077[Custom Status Step2]
+    CallActivity_9074[Custom Status Step3]
+    CallActivity_20[Custom Status Unknown]
+    CallActivity_9101[Discaded]
+    CallActivity_12079775[Log Discarded Message]
+    EndEvent_2((End Event))
+    EndEvent_9104((Discarded MaxRetries))
 
-    Postman -- HTTPS --> StartEvent
-    DS -- DataStoreConsumer --> StartEvent
-    StartEvent -- Yes --> StepCheck
-    StepCheck -- Discard --> Discard
-    StepCheck -- Yes --> StepDecision
-    StepDecision -- Step1 --> Step1SetHeaders
-    StepDecision -- Step2 --> Step2SetHeaders
-    StepDecision -- Step3 --> Step3SetHeaders
-    Step1SetHeaders --> Step1
-    Step2SetHeaders --> Step2
-    Step3SetHeaders --> Step3
-    Step1 --> Step1DB
-    Step2 --> Step2DB
-    Step3 --> Step3DB
-    Step1DB --> Step1Status
-    Step2DB --> Step2Status
-    Step3DB --> Step3Status
-    Step1Status --> EndEvent
-    Step2Status --> EndEvent
-    Step3Status --> EndEvent
-    StepDecision -- Unknown --> UnknownStep
-    UnknownStep --> EndEvent
-    Discard --> LogDiscard
-    LogDiscard --> EndDiscard
-    EndDiscard --> EndEvent
+    Postman -- HTTPS --> StartEvent_12079784
+    DS -- DataStoreConsumer --> StartEvent_2
+    StartEvent_2 --> ExclusiveGateway_9098
+    ExclusiveGateway_9098 -- Yes --> ExclusiveGateway_12
+    ExclusiveGateway_9098 -- Discard --> CallActivity_9101
+    CallActivity_9101 --> CallActivity_12079775
+    CallActivity_12079775 --> EndEvent_9104
+
+    ExclusiveGateway_12 -- Step1 --> CallActivity_12079790
+    ExclusiveGateway_12 -- Step 2 --> CallActivity_12079792
+    ExclusiveGateway_12 -- Step 3 --> CallActivity_12079794
+    ExclusiveGateway_12 -- Unknown --> CallActivity_20
+    CallActivity_20 --> EndEvent_2
+
+    CallActivity_12079790 --> CallActivity_15
+    CallActivity_12079792 --> CallActivity_18
+    CallActivity_12079794 --> CallActivity_21
+
+    CallActivity_15 --> CallActivity_12079780
+    CallActivity_18 --> CallActivity_12079781
+
+    CallActivity_12079780 --> CallActivity_9071
+    CallActivity_12079781 --> CallActivity_9077
+
+    CallActivity_21 --> CallActivity_9074
+
+    CallActivity_9071 --> EndEvent_2
+    CallActivity_9077 --> EndEvent_2
+    CallActivity_9074 --> EndEvent_2
 ```
 **BPMN Diagram**
 
 ![BPMN Diagram](./SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ-1.0.1.png "BPMN Diagram")
 
 **Functional Summary**
-- **Brief description of the iFlow**
-This iFlow processes messages from a Data Store, routes them through a series of integration processes (Step 1, Step 2, Step 3), and persists the data back to the Data Store. It includes retry logic for Data Store consumption and a discard mechanism after exceeding the maximum retry attempts. Error handling is implemented at each step, logging asynchronous exceptions.
+-   **Brief description of the iFlow**
+    This iFlow demonstrates a SEDA (Staged Event-Driven Architecture) model with a single Data Store, handling message restart and discard based on retry counts. It involves receiving messages either from a DataStore or via HTTPS, processing them through several steps, storing data in a DataStore, and logging exceptions.
 
-- **Involved systems with Adapters Type and Endpoint Type**
-    - Postman - HTTPS - Sender
-    - DS - DataStoreConsumer - Sender
+-   **Involved systems with Adapters Type and Endpoint Type**
+    -   Postman - HTTPS - Sender
+    -   DS - DataStoreConsumer - Sender
 
-- **Key steps**
-    1. Receive message from HTTPS sender or DataStore consumer.
-    2. Check retry attempts, discard if exceeded, otherwise proceed.
-    3. Route to Step 1, Step 2, or Step 3 based on header "Step".
-    4. Execute local Integration Processes "Step 1", "Step 2" and "Step 3".
-    5. Enrich message with custom status at different stages.
-    6. Persist message to Data Store at different stages.
-    7. Log exceptions asynchronously if errors occur.
-    8. End the flow.
+-   **Key steps**
+    1.  Receive message from DataStore or HTTPS endpoint.
+    2.  Determine retry attempts and continue to the next step or discard.
+    3.  Process message through "Step 1," "Step 2," and "Step 3" local integration processes, storing message status and information in the DataStore at each step.
+    4.  Set custom status messages to log processing status.
+    5.  Log any exceptions that occur during processing.
+    6.  Discard messages if maximum retries are exceeded, after logging.
 
-- **Message transformation**
-    - The iFlow uses Enrichers to set headers. The "Set Headers" Enrichers set headers SAP_Sender, SAP_Receiver, SAP_MessageType, and Step. The "Custom Status" enrichers add status messages.
-    - The Prepare Step enrichers set the Step header.
+-   **Message transformation**
+    -   The iFlow uses Enrichers to set headers and custom status messages at various stages. Header values are primarily constants or expressions. The 'Step' header value determines the subsequent processing path.
+    -   Prepare Step enrichers set headers to prepare a message for the next step (Step 1, Step 2, Step 3)
 
-- **Externalized parameters list, configured values and their descriptions**
-    - MaxRetries: 3 - Maximum number of retries before discarding a message.
-    - SEDA_MAIN_QUEUE: SEDA_MODEL_MMZ - JMS Queue Name. This parameter is not in use.
-    - Retention Threshold 4 Alerting: 1 - Threshold for alerting on retention period.
-    - Retry Interval: 15 - Interval between retry attempts.
-    - Number of Concurrent Processes: 1 - Not in use.
-    - Data Store Name: SEDA_MODEL_MMZ - Name of the Data Store.
-    - RoleName: ESBMessaging.send - Role required for the HTTPS sender.
-    - Exponential Backoff: 1 - Indicates whether exponential backoff is enabled.
-    - Expiration Period: 7 - Expiration period for messages in the Data Store.
-    - Lock Timeout: 10 - Timeout for file lock.
-    - Maximum Retry Interval: 1440 - Maximum retry interval for the Data Store consumer.
-    - Poll Interval: 10 - Interval for polling the Data Store.
+-   **Externalized parameters list, configured values and their descriptions**
+    -   MaxRetries: 3 - Maximum number of retries before discarding a message.
+    -   SEDA_MAIN_QUEUE: SEDA_MODEL_MMZ - Name of the SEDA queue.
+    -   Retention Threshold 4 Alerting: 1 - Retention threshold for alerting.
+    -   Retry Interval: 15 - Interval between retry attempts in minutes/seconds (unspecified).
+    -   Number of Concurrent Processes: 1 - Number of concurrent processes allowed.
+    -   Data Store Name: SEDA_MODEL_MMZ - Name of the DataStore used for persistence.
+    -   RoleName: ESBMessaging.send - Role required to send messages.
+    -   Exponential Backoff: 1 - Flag to enable exponential backoff for retries.
+    -   Expiration Period: 7 - Message expiration period in days/hours (unspecified).
+    -   Lock Timeout: 10 - Lock timeout value.
+    -   Maximum Retry Interval: 1440 - Maximum retry interval in minutes/seconds (unspecified).
+    -   Poll Interval: 10 - Polling interval for the DataStore Consumer.
 
-- **DataStore / JMS Dependency**
-Yes
+-   **DataStore / JMS Dependency**
+    Yes
 
-- **Cloud Connector Dependency**
-Not Found
+-   **Cloud Connector Dependency**
+    Not Found
 
-- **Common Scripts Dependency**
-    - Log_Discarded_Message.groovy - Groovy_Logging_Scripts
-    - Log_Exception_Async.groovy - Groovy_Logging_Scripts
+-   **Common Scripts Dependency**
+    -   Log_Discarded_Message.groovy - Groovy_Logging_Scripts
+    -   Log_Exception_Async.groovy - Groovy_Logging_Scripts
 
-- **ProcessDirect ComponentType Dependency**
-Not Found
+-   **ProcessDirect ComponentType Dependency**
+    Not Found
