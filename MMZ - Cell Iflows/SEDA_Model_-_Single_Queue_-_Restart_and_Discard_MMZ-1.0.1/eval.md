@@ -1,38 +1,42 @@
+markdown
 **iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.1
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🔴 Check Required\
-    The iflow contains `callActivity` steps with generic names like "Custom Status". These names should be more descriptive.
+   The iFlow contains "callActivity" elements named "Sender", "Receiver", "Content Modifier", "Request Reply", or "Router" like names that are part of default generated elements. Specifically, "Set Headers" and "Custom Status" are used which are not descriptive enough.
 
 - **Monitoring Standard Headers** -> 🟢 Ok\
-    The iflow uses standard headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType` in some steps for monitoring.
+   The iFlow uses standard headers for monitoring, such as `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType`.
 
 - **Monitoring Custom Headers** -> 🟢 Ok\
-    The iflow sets a custom header called "Step" that´s enhanced for logging purposes.
+   The iFlow uses custom status codes by populating  `SAP_MessageProcessingLogCustomStatus`.
 
 - **Iflow Metadata** -> 🟢 Ok\
-    The `metainfo.prop` file contains values for source, target, and description.
+   The `metainfo.prop` file is present and contains values for source, target, and description.
 
 - **Iflow Id** -> 🔴 Check Required\
-    The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ`. It should follow Java notation (e.g., `com.example.seda.iflow`).
+   The `Bundle-SymbolicName` in `MANIFEST.MF` (`SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ`) uses hyphens and underscores. Java notation using dots is recommended. Example: `com.sap.example.seda`.
 
 - **Parameter Externalization** -> 🟢 Ok\
-    The iflow externalizes parameters using placeholders like `{{SEDA_MAIN_QUEUE}}`, `{{Number of Concurrent Processes}}`, `{{Maximum Retry Interval}}`, `{{Retry Interval}}`, `{{Retention Threshold 4 Alerting}}`, `{{Expiration Period}}`, and `{{MaxRetries}}`.
+   The iFlow externalizes parameters such as queue names (`SEDA_MAIN_QUEUE`), retry intervals (`Retry Interval`, `Maximum Retry Interval`), and retention thresholds (`Retention Threshold 4 Alerting`, `Expiration Period`).
 
 - **Error Handling** -> 🟢 Ok\
-    The iflow implements error handling using Error Subprocesses in each process and a global exception subprocess that logs the exception.
+   The iFlow implements error handling using error subprocesses in the main process as well as in called processes for each step. It also includes exception logging.
 
 - **Local Script Security** -> 🟢 Ok\
-    The iflow does not use classes from `com.sap.it.api.securestore` or `com.sap.it.api.keystore` in its Groovy scripts.
+   The iFlow does not use classes from the `com.sap.it.api.securestore` or `com.sap.it.api.keystore` packages in local scripts.
 
 - **Iflow Organization** -> 🟢 Ok\
-    The iflow does not have more than 10 "callActivity" in the same "SequenceFlow".
+   No `SequenceFlow` has more than 10 "callActivity" elements.
 
 - **Iflow Attachments** -> 🟢 Ok\
-    The iflow does not appear to be creating attachments for successful messages using `messageLogFactory` in Groovy scripts.
+   The iFlow does not create attachments for successful messages using `messageLogFactory`.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-    The iflow does not process IDocs.
+   The iFlow does not handle IDoc messages.
 
 - **File Rules** -> 🟡 Does not apply\
-    The iflow does not process files directly.
+   The iFlow does not process any files.
+
+- **Endpoint Rules** -> 🔴 Check Required\
+   The iFlow exposes an endpoint with an HTTPS sender adapter and is configured to allow Basic Auth with ESBMessaging.send, that´s considered insecure.
