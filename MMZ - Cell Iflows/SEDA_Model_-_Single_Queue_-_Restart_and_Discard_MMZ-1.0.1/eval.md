@@ -2,40 +2,40 @@
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🔴 Check Required\
-The iflow contains "callActivity" steps with standard names such as "Custom Status", "Set Headers", "Next Step", "Discaded" and "Log Async Exception".
+The iflow contains generic step names like "Step 1", "Step 2", "Step 3", "Next Step" and "Custom Status". More descriptive names should be used.
 
 - **Monitoring Standard Headers** -> 🟢 Ok\
-The iflow utilizes standard headers like SAP_Sender, SAP_Receiver and SAP_MessageType in multiple "callActivity" steps.
+The iflow is using standard headers like SAP_Sender, SAP_Receiver, and SAP_MessageType.
 
 - **Monitoring Custom Headers** -> 🟢 Ok\
-The iflow utilizes custom statuses for monitoring using the SAP_MessageProcessingLogCustomStatus header.
+The iflow is using custom headers SAP_MessageProcessingLogCustomStatus.
 
 - **Iflow Metadata** -> 🟢 Ok\
-The `metainfo.prop` file contains values for source, target and description.
+The metainfo.prop file contains values for source, target and description.
 
 - **Iflow Id** -> 🔴 Check Required\
-The Bundle-SymbolicName in `MANIFEST.MF` (SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ) uses underscores and hyphens, which is not the recommended java notation.
+The Bundle-SymbolicName contains hyphens. It should use java notation with dots instead. For example: com.example.seda.model
 
 - **Parameter Externalization** -> 🟢 Ok\
-The iflow externalizes several important parameters such as queue names and retry intervals using placeholders like `{{SEDA_MAIN_QUEUE}}`, `{{Number of Concurrent Processes}}`, `{{Maximum Retry Interval}}`, `{{Retry Interval}}`, `{{Retention Threshold 4 Alerting}}`, `{{Expiration Period}}` and `{{MaxRetries}}`.
+The iflow is externalizing important parameters such as Queue Names, Expiration Period, Retry Interval, Number of Concurrent Processes and Retention Threshold 4 Alerting.
 
 - **Error Handling** -> 🟢 Ok\
-The iflow implements error handling using error sub-processes in several integration processes (Step 1, Step 2, Step 3 and SEDA Router). These sub-processes log exceptions and set custom statuses.
+The iflow contains error handling using error sub processes in multiple Integration Processes ("Step 1 Exception Subprocess", "Step 2 Exception Subprocess", "Step 3 Exception Subprocess","Exception Subprocess 1","Trigger Exception Subproces").
 
 - **Local Script Security** -> 🟢 Ok\
-The iflow does not appear to be using classes from `com.sap.it.api.securestore` or `com.sap.it.api.keystore`.
+The iflow is not using classes from packages com.sap.it.api.securestore or com.sap.it.api.keystore in any of the scripts.
 
 - **Iflow Organization** -> 🟢 Ok\
-The iflow does not use more than 10 "callActivity" in any single "SequenceFlow".
+No SequenceFlow contains more than 10 call activities.
 
-- **Iflow Attachments** -> 🟢 Ok\
-The provided content doesn't indicate that the developer is creating attachments for successful messages using `messageLogFactory`.
+- **Iflow Attachments** -> 🔴 Check Required\
+The iflow does not seem to be creating attachments, but it's important to confirm that the scripts don't use `messageLogFactory` in a way that could lead to excessive resource consumption.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-The iflow does not appear to be processing IDocs, so this rule does not apply.
+This iflow is not related to IDocs.
 
 - **File Rules** -> 🟡 Does not apply\
-The iflow does not appear to be processing files, so this rule does not apply.
+This iflow is not related to file processing.
 
 - **Endpoint Rules** -> 🔴 Check Required\
-The iflow exposes an endpoint with HTTPS Sender Adapter (`Participant_12079805`) and `senderAuthType` is configured with value `RoleBased` and `userRole` with `ESBMessaging.send`. It requires a check if the `enableBasicAuthentication` property is set to `true` and if not, it would be considered a security issue.
+The iFlow contains an HTTPS sender adapter ("Postman") exposing an endpoint. The userRole is set to `ESBMessaging.send` and `enableBasicAuthentication` is set to false, and the `senderAuthType` is set to `RoleBased`, which is considered the best practice.
