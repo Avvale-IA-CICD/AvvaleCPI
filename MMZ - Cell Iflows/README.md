@@ -7,4 +7,5 @@ This package contains the following integration flows:
 | iFlow ID      | Version | Sender        | Receiver      | Description                        | Details Link |
 | ------------- | ------- | ------------- | ------------- | ---------------------------------- | ------------ |
 | SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ | 1.0.1 | NA | NA | IFlows test edge cell | [View Details](SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ-1.0.1/readme.md) |
+| SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ | 1.0.1 | NA | NA | IFlows test edge cell | [View Details](SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ-1.0.1/readme.md) |
 <!-- IFLOW_TABLE_END -->
