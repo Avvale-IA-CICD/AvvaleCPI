@@ -1,38 +1,38 @@
 **iFlowId**: Check_Connectivity_to_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.4
 
 **Best Practices Summary**
-- **Iflow Steps Naming** -> 🔴 Check Required\
-    The iflow contains a 'CallActivity' named "Mapping". While not a standard name like "Sender" or "Receiver", it's generic and could benefit from a more descriptive name.
+- **Iflow Steps Naming** -> 🟢 Ok\
+The callActivity has a specific name 'Mapping'.
 
 - **Monitoring Standard Headers** -> 🔴 Check Required\
-    The provided BPMN XML doesn't explicitly show the use of standard monitoring headers (SAP_Sender, SAP_Receiver, etc.).  A review of any included scripts would be needed to confirm if these headers are being used.
+There is no evidence of standard headers being used for monitoring.
 
 - **Monitoring Custom Headers** -> 🔴 Check Required\
-    The provided BPMN XML doesn't show evidence of custom monitoring headers. A deeper inspection of any scripts would be required to determine if custom headers are being used for payload search and filtering.
+There is no evidence of custom headers being used for monitoring.
 
 - **Iflow Metadata** -> 🟢 Ok\
-    The `metainfo.prop` file contains values for source, target, and description.
+Metainfo.prop file exists and contains source, target, and description.
 
 - **Iflow Id** -> 🔴 Check Required\
-    The `Bundle-SymbolicName` in `MANIFEST.MF` (Check_Connectivity_to_SAP_Business_Suite_MMZ) uses underscores instead of the recommended java class style notation using dots.
+The Bundle-SymbolicName in MANIFEST.MF (Check_Connectivity_to_SAP_Business_Suite_MMZ) uses underscores instead of dots.
 
 - **Parameter Externalization** -> 🟢 Ok\
-    The BPMN XML shows externalized parameters using the `{{...}}` notation, such as `{{COD_enableBasicAuthentication_3}}`, `{{subject}}`, `{{issuer}}`, `{{COD_address_2}}`, `{{COD_wsdlURL_1}}`, `{{Protocol-Hostname-Port}}`, `{{Client}}`, `{{ERP_proxyType_4}}`, `{{location-id}}`, `{{ERP_authentication_5}}`, `{{artifactname}}`, `{{ERP_allowChunking_3}}`, `{{ERP_cleanupHeaders_2}}`, `{{p-key-alias}}`, indicating parameter externalization.
+The iFlow externalizes parameters with the usage of {{...}} notation in the properties.
 
 - **Error Handling** -> 🔴 Check Required\
-    The BPMN XML doesn't contain explicit error handling steps. Further examination of scripts or process design is necessary to determine if error handling is implemented.
+There's no explicit error handling mechanism visible in the provided BPMN XML.
 
 - **Local Script Security** -> 🟢 Ok\
-    The provided information does not show the usage of classes from the packages `com.sap.it.api.securestore` or `com.sap.it.api.keystore`.
+No usage of `com.sap.it.api.securestore` or `com.sap.it.api.keystore` packages is found in the scripts content.
 
 - **Iflow Organization** -> 🟢 Ok\
-    The iflow contains one `callActivity`, which is less than 10.
+Only one callActivity is present in the SequenceFlow.
 
 - **Iflow Attachments** -> 🟢 Ok\
-    No scripts were provided, assuming developer is not creating attachments using `messageLogFactory`.
+There's no evidence of attachment creation using messageLogFactory.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-    The iflow description suggests a connectivity test, not necessarily involving IDocs.
+The iflow is not processing IDocs.
 
 - **File Rules** -> 🟡 Does not apply\
-    The iflow description suggests a connectivity test, not necessarily involving files.
+The iflow is not processing files.
