@@ -35,6 +35,7 @@ graph LR
     Step3Call--directCall-->TestThrowException[Test Throw Exception]
     TestThrowException-->EndStep3((End Step 3))
 ```
+**BPMN Diagram**
 ![BPMN Diagram](./SEDA_Model_-_Single_DS_-_Restart_and_Discard_MMZ-1.0.1.png "BPMN Diagram")
 
 **Functional Summary**
