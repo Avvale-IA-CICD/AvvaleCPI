@@ -28,6 +28,7 @@ graph LR
     CustomStatus0 --> JMS_STEP0((Save Initial Msg))
     JMS_STEP0 --> RQUEUE
 ```
+![My Process Diagram](./SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ-1.0.1.png")
 
 **Functional Summary**
 - **Brief description of the iFlow**
