@@ -3,7 +3,7 @@
 -
 
 **Best Practices Summary**
-- **Iflow Steps Naming** -> 🟢 Ok\ (The call activity is named "Mapping" which is descriptive.)
+    - **Iflow Steps Naming** -> 🟢 Ok\ (The call activity is named "Mapping" which is descriptive.)
     - **Monitoring Standard Headers** -> 🔴 Check Required\ (The iflow doesn't explicitly set or use standard monitoring headers in the provided BPMN or script, so check if headers are used during development but not reflected in the XML)
     - **Monitoring Custom Headers** -> 🔴 Check Required\ (The iflow doesn't explicitly set or use custom headers in the provided BPMN or script. Further investigation is needed to confirm.)
     - **Iflow Metadata** -> 🟢 Ok\ (The `metainfo.prop` file contains values for `source`, `target`, and `description`.)
