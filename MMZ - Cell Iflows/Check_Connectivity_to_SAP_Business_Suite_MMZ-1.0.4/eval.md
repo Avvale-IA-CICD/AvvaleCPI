@@ -3,28 +3,28 @@ markdown
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🟢 Ok\
-    There are no callActivity steps with default names like "Sender", "Receiver", etc. The only `callActivity` is named "Mapping".
+    No default names found for call activities. The call activity is named "Mapping."
 - **Monitoring Standard Headers** -> 🔴 Check Required\
-    The iFlow does not explicitly set or use standard monitoring headers like SAP_Sender, SAP_Receiver, etc., within the provided XML.
+    The iFlow definition doesn't explicitly define the use of standard monitoring headers.
 - **Monitoring Custom Headers** -> 🔴 Check Required\
-    The iFlow does not explicitly set custom headers for monitoring within the provided XML.
+    The iFlow definition doesn't explicitly define the use of custom monitoring headers.
 - **Iflow Metadata** -> 🟢 Ok\
-    The `metainfo.prop` file contains values for source, target, and description.
+    iFlow metadata (source, target, description) is populated in the `metainfo.prop` file.
 - **Iflow Id** -> 🔴 Check Required\
-    The Bundle-SymbolicName in `MANIFEST.MF` (Check_Connectivity_to_SAP_Business_Suite_MMZ) uses underscores instead of the recommended java class style notation with dots.
+    The Bundle-SymbolicName in MANIFEST.MF (Check_Connectivity_to_SAP_Business_Suite_MMZ) does not follow Java naming conventions (using dots instead of underscores/hyphens). Example com.sap.check.cod.connectivity
 - **Parameter Externalization** -> 🟢 Ok\
-    Multiple parameters like URLs, authentication details, and client information are externalized using variables.
+    Multiple parameters like URLs, authentication details, and client information are externalized in the configuration parameters.
 - **Error Handling** -> 🔴 Check Required\
-    The iFlow definition does not explicitly show any error handling mechanisms.
+    The iFlow definition does not explicitly show error handling mechanisms within the process.
 - **Local Script Security** -> 🟢 Ok\
-    There are no local scripts, so there is no usage of `com.sap.it.api.securestore` or `com.sap.it.api.keystore` classes.
+    No local scripts are present. Therefore, no security concerns regarding `com.sap.it.api.securestore` or `com.sap.it.api.keystore` usage.
 - **Iflow Organization** -> 🟢 Ok\
-    There is only one callActivity, so the number of callActivities in a SequenceFlow is not an issue.
+    The iFlow has only one "callActivity," so the "SequenceFlow" does not exceed 10 "callActivity."
 - **Iflow Attachments** -> 🟢 Ok\
-    There are no local scripts, so there is no logging with messageLogFactory.
+    There are no local scripts, indicating no use of messageLogFactory for creating attachments.
 - **IDoc Rules** -> 🟡 Does not apply\
-    The iFlow does not appear to process IDocs based on the provided information.
+    The iflow does not seem to have IDoc processing.
 - **File Rules** -> 🟡 Does not apply\
-    The iFlow does not appear to process files based on the provided information.
+    The iflow does not seem to have file processing.
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-    The COD sender adapter has `COD_enableBasicAuthentication_3=true`. This requires further checking to ensure appropriate security measures are in place instead of the deprecated Basic Authentication.
+    The iFlow exposes an endpoint with a SOAP Sender Adapter.  The "COD_enableBasicAuthentication_3" parameter is set to "true", which may represent a security issue. Also, is important to check in the iflow is using the ESBMessaging.send role.
