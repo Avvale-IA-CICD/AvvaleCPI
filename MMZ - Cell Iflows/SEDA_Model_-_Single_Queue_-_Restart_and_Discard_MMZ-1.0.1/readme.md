@@ -1,41 +1,44 @@
+
 **iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard_MMZ - **iFlowVersion**: 1.0.1
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Postman --> HTTPS(StartEvent_12079806)
-    HTTPS --> SetHeaders0(Set Headers)
-    SetHeaders0 --> SaveInitialMsg(Save Initial Msg)
-    SaveInitialMsg --> CustomStatus0(Custom Status)
-    CustomStatus0 --> RQueue(RQUEUE)
-    StartEvent_2 --> ReprocessQuestion(Reprocess?)
-    ReprocessQuestion -- Discard --> DiscardMaxRetriesStatus(Discaded)
-    DiscardMaxRetriesStatus --> LogDiscarded(Log Discarded Message)
-    LogDiscarded --> DiscardedMaxRetries(Discarded MaxRetries)
-    ReprocessQuestion -- Yes --> StepQuestion(Step?)
-    StepQuestion -- Step1 --> SetHeaders1(Set Headers)
-    StepQuestion -- Step 2 --> SetHeaders2(Set Headers)
-    StepQuestion -- Step 3 --> SetHeaders3(Set Headers)
-    StepQuestion -- Unknown --> DiscardUnknownStatus(Custom Status)
-    DiscardUnknownStatus --> LogDiscardedUnknown(Log Discarded Message)
-    LogDiscardedUnknown --> DiscardedUnknown(Discarded Unknown)
-    SetHeaders1 --> Step1(Step 1)
-    SetHeaders2 --> Step2(Step 2)
-    SetHeaders3 --> Step3(Step 3)
-    Step1 --> JMS_STEP1(Next Step)
-    Step2 --> JMS_STEP2(Next Step)
-    Step3 --> JMS_STEP3(Next Step)
-    JMS_STEP1 --> CustomStatus1(Custom Status)
-    JMS_STEP2 --> CustomStatus2(Custom Status)
-    JMS_STEP3 --> CustomStatus3(Custom Status)
-    CustomStatus1 --> EndEvent(End)
-    CustomStatus2 --> EndEvent(End)
-    CustomStatus3 --> EndEvent(End)
-    SQUEUE --> StartEvent_2
-    classDef sender fill:#f9f,stroke:#333,stroke-width:2px
-    classDef receiver fill:#ccf,stroke:#333,stroke-width:2px
-    class Postman,SQUEUE sender
-    class RQueue receiver
+    Postman--HTTPS Adapter-->StartEvent_12079806
+    StartEvent_12079806-->CallActivity_9054
+    CallActivity_9054-->ServiceTask_9058
+    ServiceTask_9058--JMS Adapter-->RQUEUE
+    ServiceTask_9058-->CallActivity_9062
+    CallActivity_9062-->EndEvent_9052
+    EndEvent_9052-->ExclusiveGateway_9098
+
+    SQUEUE--JMS Adapter-->StartEvent_2
+    StartEvent_2-->ExclusiveGateway_9098
+    ExclusiveGateway_9098--Yes-->ExclusiveGateway_12
+    ExclusiveGateway_9098--Discard-->CallActivity_9101
+    CallActivity_9101-->CallActivity_12079775
+    CallActivity_12079775-->EndEvent_9104
+    ExclusiveGateway_12--Step1-->CallActivity_12079818
+    ExclusiveGateway_12--Step 2-->CallActivity_12079821
+    ExclusiveGateway_12--Step 3-->CallActivity_12079824
+    ExclusiveGateway_12--Unknown-->CallActivity_20
+    CallActivity_20-->CallActivity_12079827
+    CallActivity_12079827-->EndEvent_12079826
+    CallActivity_12079818-->CallActivity_15
+    CallActivity_12079821-->CallActivity_18
+    CallActivity_12079824-->CallActivity_21
+
+    CallActivity_15-->ServiceTask_56
+    CallActivity_18-->ServiceTask_9069
+    CallActivity_21-->CallActivity_9074
+    CallActivity_9074-->EndEvent_2
+    ServiceTask_56--JMS Adapter-->RQUEUE
+    ServiceTask_9069--JMS Adapter-->RQUEUE
+    ServiceTask_56-->CallActivity_9071
+    ServiceTask_9069-->CallActivity_9077
+    CallActivity_9071-->EndEvent_2
+    CallActivity_9077-->EndEvent_2
+    ExclusiveGateway_12-->EndEvent_12079826
 ```
 **BPMN Diagram**
 
@@ -43,35 +46,35 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow implements a SEDA (Staged Event-Driven Architecture) model with a single queue. It receives messages via HTTPS, enriches them, and then dispatches them to a JMS queue for asynchronous processing. The iFlow includes retry mechanisms and discarding of messages that exceed the maximum retry attempts or are routed to an unknown step.
+The iFlow processes messages asynchronously via a single JMS queue (SEDA_MAIN_QUEUE). It includes logic to retry failed messages up to a maximum number of retries (MaxRetries). Messages exceeding the retry limit or encountering unknown steps are discarded. The iFlow consists of multiple steps (Step 1, Step 2, Step 3) each implemented as a separate integration process.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Postman - HTTPS - EndpointSender
-    - SQUEUE - JMS - EndpointSender
-    - RQUEUE - JMS - EndpointRecevier
+    - SQUEUE: JMS Adapter (EndpointSender)
+    - RQUEUE: JMS Adapter (EndpointRecevier)
+    - Postman: HTTPS Adapter (EndpointSender)
 
 - **Key steps**
-    1. Receive messages via HTTPS adapter.
-    2. Enrich message headers and save initial message for asynchronous processing.
-    3. Route the message through different steps (Step1, Step2, Step3) based on the 'Step' property.
-    4. If a step is unknown, the message is discarded.
-    5. After each step, the message is sent to a JMS queue for further processing.
-    6. The iFlow handles exceptions in each step, logging them for asynchronous handling.
-    7. Messages exceeding the maximum retries are discarded.
+    1. Receive message via JMS adapter from SQUEUE to SEDA_MAIN_QUEUE.
+    2. Determine if the message should be reprocessed based on retry attempts (SAPJMSRetries header). If the number of retries exceeds MaxRetries, the message is discarded.
+    3. Based on the 'Step' property in the message content, route to 'Step 1', 'Step 2', or 'Step 3' integration process.
+    4. Each step performs some logic and sets a custom status on the message processing log.
+    5. The message is then sent to the next step via the SEDA_MAIN_QUEUE using the JMS adapter, until the step is equal to 'EndMessage'.
+    6. If an exception occurs within a step, a custom status is set and the exception is logged asynchronously via Groovy script. Discarded messages are also logged via Groovy script.
+    7. Postman can trigger the iFlow via HTTPS, sending a message to the SEDA_MAIN_QUEUE.
 
 - **Message transformation**
-    - Enricher: Used to set headers (SAP_Sender, SAP_Receiver, SAP_MessageType) and custom statuses (SAP_MessageProcessingLogCustomStatus) at various stages of the flow.
-    - Enricher: Used to Prepare Step 2 and Step 3 messages.
-    - Groovy Script: Used to log discarded messages and exceptions.
+    - Each "Step" integration process sets/deletes properties in the message body and headers to prepare the message for the subsequent step.
+    - The Enricher component is used to set custom status values in the message processing log.
+    - Groovy scripts are used to log exceptions and discarded messages.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - SEDA_MAIN_QUEUE=SEDA_MODEL_MMZ: The name of the main JMS queue used for message processing.
-    - Number of Concurrent Processes=1: The number of concurrent processes for the JMS receiver adapter.
-    - MaxRetries=10: Maximum number of retries before a message is discarded.
-    - Retry Interval=15: Interval (in minutes) between retry attempts.
-    - Maximum Retry Interval=1440: Maximum retry interval (in minutes).
-    - Expiration Period=7: Message Expiration Period.
-    - Retention Threshold 4 Alerting=1: Message Retention Threshold.
+    - SEDA_MAIN_QUEUE: SEDA_MODEL_MMZ - Name of the main JMS queue used for asynchronous processing.
+    - MaxRetries: 10 - Maximum number of retry attempts for a message.
+    - Expiration Period: 7 - Message Expiration Period (unspecified units)
+    - Maximum Retry Interval: 1440 - Maximum time (unspecified units) to retry sending messages.
+    - Retention Threshold 4 Alerting: 1 - Retention Threshold (unspecified units) for alerting purposes.
+    - Retry Interval: 15 - Interval (unspecified units) between retry attempts.
+    - Number of Concurrent Processes: 1 - Number of concurrent processes
 
 - **DataStore / JMS Dependency**
 Yes
@@ -80,8 +83,8 @@ Yes
 Not Found
 
 - **Common Scripts Dependency**
-    - Log_Discarded_Message.groovy - scriptBundleId: Groovy_Logging_Scripts
-    - Log_Exception_Async.groovy - scriptBundleId: Groovy_Logging_Scripts
+    - Log_Discarded_Message.groovy - Groovy_Logging_Scripts
+    - Log_Exception_Async.groovy - Groovy_Logging_Scripts
 
 - **ProcessDirect ComponentType Dependency**
 Not Found
