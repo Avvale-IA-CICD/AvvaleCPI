@@ -3,10 +3,10 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    ERP[ERP] -->|SOAP Adapter| StartEvent(Start)
+    ERP[ERP] -->|SOAP| StartEvent(Start)
     StartEvent --> Mapping(Mapping)
     Mapping --> EndEvent(End)
-    EndEvent -->|SOAP Adapter| COD[COD]
+    EndEvent -->|SOAP| COD[COD]
 ```
 **BPMN Diagram**
 
@@ -14,40 +14,40 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow performs an End-to-End connectivity check from SAP ERP to SAP Cloud for Customer via SAP Integration Suite.
+  This iFlow performs an end-to-end connectivity check from an SAP ERP system to SAP Cloud for Customer (C4C) via SAP Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - ERP: SOAP Adapter, EndpointSender
-    - COD: SOAP Adapter, EndpointRecevier
+    - ERP (EndpointSender) - SOAP Adapter
+    - COD (EndpointRecevier) - SOAP Adapter
 
 - **Key steps**
-    1.  Receive message from ERP system via SOAP adapter.
-    2.  Map the message using the `ERP_COD_ConnectivityCheck` operation mapping.
-    3.  Send message to COD system via SOAP adapter.
+ 1. The iFlow starts with a message from the ERP system.
+ 2. An Operation Mapping (`ERP_COD_ConnectivityCheck`) transforms the message.
+ 3. The transformed message is sent to the C4C system.
 
 - **Message transformation**
-    - Operation Mapping: `ERP_COD_ConnectivityCheck` (src/main/resources/mapping/ERP_COD_ConnectivityCheck)
+    - Operation Mapping: `ERP_COD_ConnectivityCheck` (located at `src/main/resources/mapping/ERP_COD_ConnectivityCheck`)
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `COD_enableBasicAuthentication_6`: `0` (Enable Basic Authentication for COD)
-    - `subject`: `` (Subject)
-    - `ERP_wsdlURL_0`: `/wsdl/ConnectivityCheckConsumer.wsdl` (ERP WSDL URL)
-    - `Port`: `443` (Port for COD)
-    - `artifactname`: `` (Credential Name for COD)
-    - `ERP_enableBasicAuthentication_8`: `true` (Enable Basic Authentication for ERP)
-    - `pr-key-alias`: `` (Private Key Alias)
-    - `Host`: `COD` (Host for COD)
-    - `ERP_address_1`: `/ERP/COD/SimpleConnect` (ERP Address)
-    - `issuer`: `` (Issuer)
+    - `COD_enableBasicAuthentication_6`: `0` - Enables basic authentication for the COD receiver adapter.
+    - `subject`: `` - Subject for authentication.
+    - `ERP_wsdlURL_0`: `/wsdl/ConnectivityCheckConsumer.wsdl` - WSDL URL for the ERP sender adapter.
+    - `Port`: `443` - Port number for the COD receiver address.
+    - `artifactname`: `` - Credential name for authentication.
+    - `ERP_enableBasicAuthentication_8`: `true` - Enables basic authentication for the ERP sender adapter.
+    - `pr-key-alias`: `` - Private key alias for authentication.
+    - `Host`: `COD` - Hostname for the COD receiver address.
+    - `ERP_address_1`: `/ERP/COD/SimpleConnect` - Address for the ERP sender adapter.
+    - `issuer`: `` - Issuer for authentication.
 
 - **DataStore / JMS Dependency**
-Not Found
+    Not Found
 
 - **Cloud Connector Dependency**
-Not Found
+    Not Found
 
 - **Common Scripts Dependency**
-Not Found
+    Not Found
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+    Not Found
