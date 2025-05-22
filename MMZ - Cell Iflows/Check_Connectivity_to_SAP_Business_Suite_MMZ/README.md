@@ -8,6 +8,7 @@ This document provides an overview, deployment history, and links to specific ve
 %%{init: { 'logLevel': 'debug', 'theme': 'forest' } }%%
 timeline
     title Check_Connectivity_to_SAP_Business_Suite_MMZ Deployment History
+    2025-05-22_17-12-12 : Deployment : mikel.maeso@avvale.com : Version 1.0.4
     2025-05-22_17-6-54 : Deployment : mikel.maeso@avvale.com : Version 1.0.5
 ```
 <!-- DEPLOYMENT_TIMELINE_END -->
@@ -15,4 +16,5 @@ timeline
 ## Available Versions
 <!-- VERSION_LINKS_START -->
 - [Version 1.0.5 (Deployed: 2025-05-22 17:06:54 CEST CEST)](./1.0.5/readme.md)
+- [Version 1.0.4 (Deployed: 2025-05-22 17:12:12 CEST CEST)](./1.0.4/readme.md)
 <!-- VERSION_LINKS_END -->
