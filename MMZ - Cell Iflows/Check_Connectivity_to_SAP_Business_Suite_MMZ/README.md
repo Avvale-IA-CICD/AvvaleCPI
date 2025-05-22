@@ -10,6 +10,7 @@ timeline
     title Check_Connectivity_to_SAP_Business_Suite_MMZ Deployment History
     2025-05-22_19-20-9 : Deployment : mikel.maeso@avvale.com : Version 1.0.4
     2025-05-22_19-21-45 : Deployment : mikel.maeso@avvale.com : Version 1.0.5
+    2025-05-22_19-22-56 : Deployment : mikel.maeso@avvale.com : Version 1.0.4
 ```
 <!-- DEPLOYMENT_TIMELINE_END -->
 
