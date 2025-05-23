@@ -9,10 +9,12 @@ This document provides an overview, deployment history, and links to specific ve
 timeline
     title Iflow Deployment Lifecycle
     2025-05-23_12-43-32 : Deployment : mikel.maeso@avvale.com : Version 1.0.3
+    2025-05-23_12-44-44 : Deployment : mikel.maeso@avvale.com : Version 1.0.4
 ```
 <!-- DEPLOYMENT_TIMELINE_END -->
 
 ## Available Versions
 <!-- VERSION_LINKS_START -->
+- [Version 1.0.4 (Deployed: 2025-05-23 12:44:44 CEST CEST)](./1.0.4/readme.md)
 - [Version 1.0.3 (Deployed: 2025-05-23 12:43:32 CEST CEST)](./1.0.3/readme.md)
 <!-- VERSION_LINKS_END -->
