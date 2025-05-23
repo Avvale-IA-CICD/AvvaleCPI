@@ -10,6 +10,7 @@ timeline
     title Iflow Deployment Lifecycle
     2025-05-23_12-43-27 : Deployment : mikel.maeso@avvale.com : Version 1.0.4
     2025-05-23_12-44-49 : Deployment : mikel.maeso@avvale.com : Version 1.0.5
+    2025-05-23_12-45-35 : Deployment : mikel.maeso@avvale.com : Version 1.0.4
 ```
 <!-- DEPLOYMENT_TIMELINE_END -->
 
