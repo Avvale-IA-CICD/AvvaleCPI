@@ -3,47 +3,30 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    subgraph "Main Process"
-    STT(Start Timer) --> MH[Maintain Headers]
-    MH --> SA[Set parameters: Altas]
-    SA --> MA[Move Altas files]
-     MA -- LoopingProcess --> RFASFTP(Read file from SFTP)
-    RFASFTP --> CFCA[Check file contents]
-    CFCA -- Yes --> STDS[Send file to destination]
-    STDS --> MAF[Manually archive file]
-    MAF --> EDA[End Altas]
-    CFCA -- No --> EDA[End Altas]
-    MA --> AD[Add delay]
-    AD --> SB[Set parameters: Bajas]
-     SB --> MB[Move Bajas files]
-    MB -- LoopingProcess --> RFBSFTP(Read file from SFTP)
-    RFBSFTP --> CFCB[Check file contents]
-    CFCB -- Yes --> STDSB[Send file to destination]
-    STDSB --> MAFB[Manually archive file]
-    MAFB --> EDB[End Bajas]
-    CFCB -- No --> EDB[End Bajas]
-        subgraph "Iterative Process"
-       RFASFTP --> CFCA
-        RFBSFTP --> CFCB
-        end
-    end
-  subgraph "Error Handling"
-        subgraph "Handle Exception Process"
-       SE[Start 2] --> LE[Log Exception]
-        LE --> ND[Notification?]
-        ND -- true --> SM[Send Mail]
-        SM -- ProcessDirect --> AlertReceiver
-        ND -- false --> EE[End 2]
-        SM --> EE[End 2]
-          end
-    end
- A3M -- PollingSFTP --> RFASFTP
-  A3M -- PollingSFTP --> RFBSFTP
- STDS -- SFTP --> SERES
- MAF -- SFTP --> A3M_ARC
- STDSB -- SFTP --> SERES
- MAFB -- SFTP --> A3M_ARC
+    StartTimer-->MaintainHeaders
+    MaintainHeaders-->SetAltasParameters
+    SetAltasParameters-->MoveAltasFiles
+    MoveAltasFiles-->AddDelay
+    AddDelay-->SetBajasParameters
+    SetBajasParameters-->MoveBajasFiles
+    MoveBajasFiles-->End
 
+    subgraph IterativeProcess [Iterative process]
+    StartEvent-->SetBodyBlank
+    SetBodyBlank-->ReadFileSFTP(Read file from SFTP PollingSFTP)
+    ReadFileSFTP-->CheckFileContents
+    CheckFileContents-->ExclusiveGateway
+    ExclusiveGateway--Yes-->SendFileSERES(Send file to SERES SFTP)
+    SendFileSERES-->ArchiveFileA3MARC(Manually archive file SFTP)
+    ArchiveFileA3MARC-->Next
+    ExclusiveGateway--No-->Next
+    Next-->EndEvent
+    end
+
+    style StartTimer fill:#f9f,stroke:#333,stroke-width:2px
+    style End fill:#f9f,stroke:#333,stroke-width:2px
+    style StartEvent fill:#f9f,stroke:#333,stroke-width:2px
+    style EndEvent fill:#f9f,stroke:#333,stroke-width:2px
 ```
 **BPMN Diagram**
 
@@ -51,70 +34,68 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow integrates SAP S/4HANA with SII (Suministro Inmediato de Información) by processing files (Altas, Bajas, Modificaciones) sequentially from an SFTP server, transforming and sending them to SERES, and archiving the files.  It includes error handling and logging.
+The iFlow integrates files from A3M's SFTP server, processes them, and sends them to SERES's SFTP server. It handles Altas, Bajas, and Modificaciones files sequentially, archiving them after processing. The iFlow includes exception handling and notification mechanisms.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - A3M (Sender): PollingSFTP Adapter, EndpointSender
-    - SERES (Receiver): SFTP Adapter, EndpointRecevier
-    - A3M_ARC (Receiver): SFTP Adapter, EndpointRecevier
-    - AlertReceiver (Receiver): ProcessDirect Adapter, EndpointRecevier
+    - A3M (PollingSFTP, EndpointSender)
+    - SERES (SFTP, EndpointRecevier)
+    - A3M_ARC (SFTP, EndpointRecevier)
+    - AlertReceiver (ProcessDirect, EndpointRecevier)
 
 - **Key steps**
-    1.  Start Timer to trigger the process.
-    2.  Set headers and properties for processing.
-    3.  Set parameters for Altas files (Source, Destination, ArchiveDir, FilenamePattern).
-    4.  Read Altas files from SFTP.
-    5.  Check file contents to determine if a file was read.
-    6.  If a file was read, send it to the destination.
-    7.  Archive the processed file.
-    8. Add Delay between Altas and Bajas processing.
-    9. Set parameters for Bajas files (FilenamePattern).
-    10. Read Bajas files from SFTP.
-    11. Check file contents to determine if a file was read.
-    12. If a file was read, send it to the destination.
-    13. Archive the processed file.
-    14. Handle any exceptions that occur during the process.
+    1. Start Timer to initiate the file processing.
+    2. Set headers and properties for the integration flow.
+    3. Set parameters specific to Altas files (source, destination, filename pattern).
+    4. Move Altas files from the source SFTP to SERES using an iterative process.
+    5. Add a delay between processing batches of files.
+    6. Set parameters specific to Bajas files (filename pattern).
+    7. Move Bajas files from the source SFTP to SERES using an iterative process.
+    8. End the process.
+    9. Iterate files from SFTP A3M, Check the file content and send to destination
+    10. Archive file in A3M_ARC.
 
 - **Message transformation**
-    - The iFlow uses groovy scripts (SetBodyBlank.groovy, ContinueReading.groovy, Log_Discarded_Message.groovy, Log_Exception.groovy, AddDelay.groovy) for message transformation.
-    -  The "Maintain headers" call activity also modifies headers and properties.
+    - The iFlow uses a Content Modifier to set headers (SAP_Sender, SAP_Receiver, SAP_MessageType) and properties (ArchiveDir, InboundRequest, Logging, DelayBetweenBatches, SFTP_SERES_SECUREPARAMETER, ArchiveErrorsDir, ArchiveSuccessfulDir).
+    - Groovy scripts are used to set the body blank and check file contents.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - SERES_DIR: /in (SERES Input Directory)
-    - ArchiveErrorsDir:  (Archive Directory for Errors)
-    - SFTP_SERES_SECUREPARAMETER: SFTP_SII_USER (Secure Parameter for SERES SFTP)
-    - BajasDelayAfterAltas: 30 (Delay in seconds after Altas processing before starting Bajas processing)
-    - SENDER_BC: A3MEDIA_SFTP (Sender Business Component)
-    - SFTP_RISE_CREDENTIALS: SFTP_DEVTEST_DELETE (Credentials for RISE SFTP)
-    - SFTP_SERES_CREDENTIALS:  (Credentials for SERES SFTP)
-    - SAP_MessageType_Mod: FicheroModificaciones (SAP Message Type for Modificaciones files)
-    - DelayBetweenBatches: 10 (Delay in seconds between processing batches)
-    - SFTP_RISE_SERVER: eu-central-1.sftpcloud.io (RISE SFTP Server Address)
-    - RECEIVER_BC: SERES_SFTP (Receiver Business Component)
-    - ModDelayAfterAltas: 60 (Delay in seconds after Altas processing before starting Modificaciones processing)
-    - SFTP_MOD_FILENAME: *\#*\#*\#M.* (Filename pattern for Modificaciones files)
-    - SFTP_BAJAS_FILENAME: B_*.txt (Filename pattern for Bajas files)
-    - SAP_MessageType_Bajas: FicheroBajas (SAP Message Type for Bajas files)
-    - SFTP_RISE_LOCATION:  (RISE SFTP Location ID)
-    - SFTP_SERES_TIMEOUT: 15000 (Timeout in milliseconds for SERES SFTP connection)
-    - Logging: true (Enable/Disable Logging)
-    - SFTP_SERES_PRIVATEKEY:  (Private key alias for SERES SFTP)
-    - SAP_MessageType_Altas: FicheroAltas (SAP Message Type for Altas files)
-    - Email_Notification: true (Enable/Disable Email Notification)
-    - ArchiveSuccessfulDir: /archive (Archive Directory for Successful files)
-    - SFTP_RISE_DIR: /in (RISE SFTP Input Directory)
-    - Timer:  (Timer configuration for iFlow execution)
-    - SFTP_SERES_SERVER: eu-central-1.sftpcloud.io:22 (SERES SFTP Server Address and Port)
-    - SFTP_ALTAS_FILENAME: A_*.txt (Filename pattern for Altas files)
+    - `SERES_DIR`: `/in` (SERES Directory)
+    - `ArchiveErrorsDir`: `` (Archive Errors Directory)
+    - `SFTP_SERES_SECUREPARAMETER`: `SFTP_SII_USER` (SFTP SERES Secure Parameter)
+    - `BajasDelayAfterAltas`: `30` (Delay in seconds after processing Altas files before processing Bajas files)
+    - `SENDER_BC`: `A3MEDIA_SFTP` (Sender Business Component)
+    - `SFTP_RISE_CREDENTIALS`: `SFTP_DEVTEST_DELETE` (SFTP RISE Credentials)
+    - `SFTP_SERES_CREDENTIALS`: `` (SFTP SERES Credentials)
+    - `SAP_MessageType_Mod`: `FicheroModificaciones` (SAP Message Type for Modificaciones)
+    - `DelayBetweenBatches`: `10` (Delay in seconds between processing batches)
+    - `SFTP_RISE_SERVER`: `eu-central-1.sftpcloud.io` (SFTP RISE Server)
+    - `RECEIVER_BC`: `SERES_SFTP` (Receiver Business Component)
+    - `ModDelayAfterAltas`: `60` (Delay in seconds after processing Altas files before processing Modificaciones files)
+    - `SFTP_MOD_FILENAME`: `*\#*\#*\#M.*` (SFTP Modificaciones Filename Pattern)
+    - `SFTP_BAJAS_FILENAME`: `B_*.txt` (SFTP Bajas Filename Pattern)
+    - `SAP_MessageType_Bajas`: `FicheroBajas` (SAP Message Type for Bajas)
+    - `SFTP_RISE_LOCATION`: `` (SFTP RISE Location)
+    - `SFTP_SERES_TIMEOUT`: `15000` (SFTP SERES Timeout in milliseconds)
+    - `Logging`: `true` (Enable/Disable logging)
+    - `SFTP_SERES_PRIVATEKEY`: `` (SFTP SERES Private Key Alias)
+    - `SAP_MessageType_Altas`: `FicheroAltas` (SAP Message Type for Altas)
+    - `Email_Notification`: `true` (Enable/Disable Email Notification)
+    - `ArchiveSuccessfulDir`: `/archive` (Archive Successful Directory)
+    - `SFTP_RISE_DIR`: `/in` (SFTP RISE Directory)
+    - `Timer`: `<row><cell>dateType</cell><cell>SIMPLE</cell></row><row><cell>hourValue</cell><cell>10</cell></row><row><cell>minutesValue</cell><cell>48</cell></row><row><cell>timeType</cell><cell>ON_TIME</cell></row><row><cell>timeZone</cell><cell>( UTC 0\:00 ) Greenwich Mean Time(Etc/GMT)</cell></row><row><cell>throwExceptionOnExpiry</cell><cell>true</cell></row><row><cell>second</cell><cell>0</cell></row><row><cell>minute</cell><cell>0/5</cell></row><row><cell>hour</cell><cell>*</cell></row><row><cell>day_of_month</cell><cell>?</cell></row><row><cell>month</cell><cell>*</cell></row><row><cell>dayOfWeek</cell><cell>*</cell></row><row><cell>year</cell><cell>*</cell></row><row><cell>startAt</cell><cell>2025-05-23T00\:00\:00</cell></row><row><cell>endAt</cell><cell>2050-01-01T00\:00\:00</cell></row><row><cell>attributeBehaviour</cell><cell>isThrowExceptionOnExpiryVisible,isScheduleAdvancedVisible,isScheduleAdvancedStartEndVisible,isScheduleSimpleVisible</cell></row><row><cell>triggerType</cell><cell>cron</cell></row><row><cell>noOfSchedules</cell><cell>1</cell></row><row><cell>schedule1</cell><cell>simple.repeat\=NONE&amp;trigger.timeZone\=Etc/GMT</cell></row>` (Timer Configuration)
+    - `SFTP_SERES_SERVER`: `eu-central-1.sftpcloud.io:22` (SFTP SERES Server Address)
+    - `SFTP_ALTAS_FILENAME`: `A_*.txt` (SFTP Altas Filename Pattern)
 
 - **DataStore / JMS Dependency**
-    Not Found
+Not Found
 
 - **Cloud Connector Dependency**
-    Not Found
+Not Found
 
 - **Common Scripts Dependency**
-    - Common_-_Groovy_Logging_Scripts
+    - Common_-_Groovy_Logging_Scripts:
+        - Log_Discarded_Message.groovy
+        - Log_Exception.groovy
 
 - **ProcessDirect ComponentType Dependency**
     - /common/errorNotification
