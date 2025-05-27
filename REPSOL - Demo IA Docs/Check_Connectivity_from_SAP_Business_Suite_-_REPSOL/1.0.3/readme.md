@@ -3,16 +3,10 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    ERP[ERP]
-    COD[COD]
-    Start[Start]
-    Mapping[Mapping]
-    End[End]
-
-    ERP -- SOAP Adapter --> Start
+    ERP[ERP] -->|SOAP Adapter| Start
     Start --> Mapping
     Mapping --> End
-    End -- SOAP Adapter --> COD
+    End -->|SOAP Adapter| COD[COD]
 ```
 **BPMN Diagram**
 
@@ -20,31 +14,31 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer (COD) via SAP Integration Suite.
+The iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer (COD) via SAP Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-  - ERP (EndpointSender): SOAP Adapter
-  - COD (EndpointRecevier): SOAP Adapter
+    - ERP (EndpointSender): SOAP Adapter
+    - COD (EndpointRecevier): SOAP Adapter
 
 - **Key steps**
- 1. Receive SOAP message from ERP system.
- 2. Perform a mapping using the `ERP_COD_ConnectivityCheck` operation mapping.
- 3. Send SOAP message to COD system.
+ 1. Receive message from ERP via SOAP adapter.
+ 2. Perform message mapping using the `ERP_COD_ConnectivityCheck` operation mapping.
+ 3. Send message to COD via SOAP adapter.
 
 - **Message transformation**
-  - The iFlow utilizes the `ERP_COD_ConnectivityCheck` operation mapping located at `dir://opmap/src/main/resources/mapping/ERP_COD_ConnectivityCheck.opmap`.
+    - An operation mapping named `ERP_COD_ConnectivityCheck` is used to transform the message.
 
 - **Externalized parameters list, configured values and their descriptions**
-  - `COD_enableBasicAuthentication_6`: Configured value: `0`. Description: Enables/disables basic authentication for the COD receiver channel.
-  - `subject`: Configured value: ``. Description: Subject for authentication.
-  - `ERP_wsdlURL_0`: Configured value: `/wsdl/ConnectivityCheckConsumer.wsdl`. Description: WSDL URL for the ERP sender channel.
-  - `Port`: Configured value: `443`. Description: Port for the COD receiver channel.
-  - `artifactname`: Configured value: ``. Description: Credential name for authentication.
-  - `ERP_enableBasicAuthentication_8`: Configured value: `true`. Description: Enables/disables basic authentication for the ERP sender channel.
-  - `pr-key-alias`: Configured value: ``. Description: Private key alias.
-  - `Host`: Configured value: `COD`. Description: Host name for the COD receiver channel.
-  - `ERP_address_1`: Configured value: `/ERP/COD/SimpleConnect`. Description: Address for the ERP sender channel.
-  - `issuer`: Configured value: ``. Description: Issuer for authentication.
+    - `COD_enableBasicAuthentication_6`: Configured Value: `0`. Description: Not provided in the iFlow definition, but probably enables or disables basic authentication on the COD receiver adapter.
+    - `subject`: Configured Value: ``. Description: Not provided, likely related to security certificates.
+    - `ERP_wsdlURL_0`: Configured Value: `/wsdl/ConnectivityCheckConsumer.wsdl`. Description: The WSDL URL for the ERP sender adapter.
+    - `Port`: Configured Value: `443`. Description: The port used for the COD endpoint.
+    - `artifactname`: Configured Value: ``. Description: Name of the credential artifact used for COD.
+    - `ERP_enableBasicAuthentication_8`: Configured Value: `true`. Description: Enables basic authentication on the ERP sender adapter.
+    - `pr-key-alias`: Configured Value: ``. Description: Alias for the private key.
+    - `Host`: Configured Value: `COD`. Description: The host name for the COD endpoint.
+    - `ERP_address_1`: Configured Value: `/ERP/COD/SimpleConnect`. Description: The address for the ERP sender adapter.
+    - `issuer`: Configured Value: ``. Description: Not provided, likely related to security certificates.
 
 - **DataStore / JMS Dependency**
 Not Found
