@@ -1,12 +1,12 @@
-**iFlowId:** Check_Connectivity_from_SAP_Business_Suite_MMZ - **iFlowVersion:** 1.0.3
+**iFlowId**: Check_Connectivity_from_SAP_Business_Suite_MMZ - **iFlowVersion**: 1.0.3
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    ERP[ERP] -->|SOAP Adapter| Start
-    Start --> Mapping
-    Mapping --> End
-    End -->|SOAP Adapter| COD[COD]
+    ERP[ERP] -->|SOAP Adapter| StartEvent
+    StartEvent[Start Event] --> Mapping
+    Mapping[Mapping: ERP_COD_ConnectivityCheck] --> EndEvent
+    EndEvent[End Event] -->|SOAP Adapter| COD[COD]
 ```
 **BPMN Diagram**
 
@@ -14,40 +14,32 @@ graph LR
 
 **Functional Summary**
 -   **Brief description of the iFlow**
-    Performs End2End connectivity check from SAP ERP to SAP Cloud for Customer.
-
+    This iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer via SAP Integration Suite.
 -   **Involved systems with Adapters Type and Endpoint Type**
     -   ERP (SOAP, EndpointSender)
     -   COD (SOAP, EndpointRecevier)
-
 -   **Key steps**
-    1.  Receive request from ERP via SOAP adapter.
-    2.  Map the message using Operation Mapping (ERP\_COD\_ConnectivityCheck).
-    3.  Send the message to COD via SOAP adapter.
-
+    1.  Receive SOAP message from ERP.
+    2.  Map the message using Operation Mapping "ERP\_COD\_ConnectivityCheck".
+    3.  Send SOAP message to COD.
 -   **Message transformation**
-    -   Operation Mapping: ERP\_COD\_ConnectivityCheck
-
+    -   ERP to COD using Operation Mapping: ERP\_COD\_ConnectivityCheck.opmap
 -   **Externalized parameters list, configured values and their descriptions**
-    -   COD\_enableBasicAuthentication\_6: 0 (Not specified description)
-    -   subject:  (Not specified description)
-    -   ERP\_wsdlURL\_0: /wsdl/ConnectivityCheckConsumer.wsdl (Not specified description)
-    -   Port: 443 (Not specified description)
-    -   artifactname:  (Not specified description)
-    -   ERP\_enableBasicAuthentication\_8: true (Not specified description)
-    -   pr-key-alias:  (Not specified description)
-    -   Host: COD (Not specified description)
-    -   ERP\_address\_1: /ERP/COD/SimpleConnect (Not specified description)
-    -   issuer:  (Not specified description)
-
+    -   COD\_enableBasicAuthentication\_6: 0
+    -   subject:
+    -   ERP\_wsdlURL\_0: /wsdl/ConnectivityCheckConsumer.wsdl
+    -   Port: 443
+    -   artifactname:
+    -   ERP\_enableBasicAuthentication\_8: true
+    -   pr-key-alias:
+    -   Host: COD
+    -   ERP\_address\_1: /ERP/COD/SimpleConnect
+    -   issuer:
 -   **DataStore / JMS Dependency**
     Not Found
-
 -   **Cloud Connector Dependency**
     Not Found
-
 -   **Common Scripts Dependency**
     Not Found
-
 -   **ProcessDirect ComponentType Dependency**
     Not Found
