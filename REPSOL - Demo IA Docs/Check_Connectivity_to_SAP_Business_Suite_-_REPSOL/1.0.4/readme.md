@@ -1,13 +1,20 @@
 **iFlowId**: Check_Connectivity_to_SAP_Business_Suite_-_REPSOL - **iFlowVersion**: 1.0
 
 **Mermaid Diagram**
+- **Visual representation of the flow**
+
 ```mermaid
 graph LR
-    COD[COD] --> StartEvent((StartEvent)):::circle -- SOAP -->|SOAP Adapter| StartEvent
-    StartEvent --> Mapping{Mapping}
-    Mapping --> EndEvent((EndEvent)):::circle
-    EndEvent --> ERP[ERP] -- SOAP -->|SOAP Adapter| ERP
-    classDef circle fill:#f9f,stroke:#333,stroke-width:2px
+    COD[COD]
+    ERP[ERP]
+    Start[Start]
+    Mapping[Mapping]
+    End[End]
+
+    COD -- SOAP Adapter --> Start
+    Start --> Mapping
+    Mapping --> End
+    End -- SOAP Adapter --> ERP
 ```
 **BPMN Diagram**
 
@@ -15,44 +22,44 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow performs an End-to-End connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
+  This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - COD (SAP Cloud for Customer): SOAP Adapter (EndpointSender)
-    - ERP (SAP ERP): SOAP Adapter (EndpointRecevier)
+    - COD (EndpointSender) - SOAP Adapter
+    - ERP (EndpointRecevier) - SOAP Adapter
 
 - **Key steps**
-    1.  Receive request from COD system.
-    2.  Map the incoming message using the `COD_ERP_CheckEnd2EndConnectivity.opmap` mapping.
-    3.  Send the transformed message to the ERP system.
+1.  The iFlow starts upon receiving a message from the COD system.
+2.  A mapping step transforms the message. The mapping is defined in `src/main/resources/mapping/COD_ERP_CheckEnd2EndConnectivity`.opmap
+3.  The transformed message is then sent to the ERP system.
 
 - **Message transformation**
-    - `COD_ERP_CheckEnd2EndConnectivity.opmap` mapping is used.
+    - A mapping step `COD_ERP_CheckEnd2EndConnectivity.opmap` is used to transform the message between COD and ERP.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `ERP_authentication_5`: Client Certificate - Authentication method for ERP.
-    - `Protocol-Hostname-Port`: `https://erphost:443` - ERP host and port.
-    - `subject`: `cn=subject` - Subject.
-    - `artifactname`:   - Artifact Name
-    - `p-key-alias`:  - Private key alias for ERP.
-    - `ERP_allowChunking_3`: 1 - Flag to allow chunking for ERP.
-    - `issuer`: `cn=issuer` - Issuer.
-    - `ERP_proxyType_4`: default - Proxy type for ERP connection.
-    - `COD_enableBasicAuthentication_3`: true - Enable Basic Authentication for COD.
-    - `COD_wsdlURL_1`: `/wsdl/CheckConnectivityConsumer.wsdl` - WSDL URL for COD.
-    - `ERP_cleanupHeaders_2`: 1 - Flag to clean up headers for ERP.
-    - `location-id`:   - Location ID for ERP.
-    - `Client`: 100 - ERP Client.
-    - `COD_address_2`: `/COD/ERP/SimpleConnect` - Address for COD.
+    - `ERP_authentication_5`: Client Certificate
+    - `Protocol-Hostname-Port`: https\://erphost\:443
+    - `subject`: cn\=subject
+    - `artifactname`: (empty)
+    - `p-key-alias`: (empty)
+    - `ERP_allowChunking_3`: 1
+    - `issuer`: cn\=issuer
+    - `ERP_proxyType_4`: default
+    - `COD_enableBasicAuthentication_3`: true
+    - `COD_wsdlURL_1`: /wsdl/CheckConnectivityConsumer.wsdl
+    - `ERP_cleanupHeaders_2`: 1
+    - `location-id`: (empty)
+    - `Client`: 100
+    - `COD_address_2`: /COD/ERP/SimpleConnect
 
 - **DataStore / JMS Dependency**
-Not Found
+  Not Found
 
 - **Cloud Connector Dependency**
-Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-Not Found
+  Not Found
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+  Not Found
