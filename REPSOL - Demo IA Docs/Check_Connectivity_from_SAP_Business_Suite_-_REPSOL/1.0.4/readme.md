@@ -5,13 +5,13 @@
 graph LR
     ERP[ERP]
     COD[COD]
-    StartEvent_1[Start]
+    StartEvent_1((Start))
     CallActivity_1[Mapping]
-    EndEvent_1[End]
+    EndEvent_1((End))
 
     ERP -- SOAP Adapter --> StartEvent_1
-    StartEvent_1 --> SequenceFlow_1( ) --> CallActivity_1
-    CallActivity_1 --> SequenceFlow_2( ) --> EndEvent_1
+    StartEvent_1 --> CallActivity_1
+    CallActivity_1 --> EndEvent_1
     EndEvent_1 -- SOAP Adapter --> COD
 ```
 **BPMN Diagram**
@@ -27,24 +27,24 @@ This iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud f
     - COD (EndpointRecevier) - SOAP Adapter
 
 - **Key steps**
-    1.  Receive SOAP request from ERP.
-    2.  Map the request using the `ERP_COD_ConnectivityCheck` operation mapping.
-    3.  Send SOAP request to COD.
+ 1. The iFlow starts with a message from the ERP system.
+ 2. A mapping step transforms the message (ERP_COD_ConnectivityCheck).
+ 3. The iFlow ends by sending the transformed message to the COD system.
 
 - **Message transformation**
-    - Operation Mapping: `ERP_COD_ConnectivityCheck`
+    - ERP_COD_ConnectivityCheck.opmap
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `COD_enableBasicAuthentication_6`: `0` (Enable Basic Authentication for COD)
-    - `subject`: `` (Subject for Authentication)
-    - `ERP_wsdlURL_0`: `/wsdl/ConnectivityCheckConsumer.wsdl` (WSDL URL for ERP)
-    - `Port`: `443` (Port for COD connection)
-    - `artifactname`: `` (Credential Name for COD)
-    - `ERP_enableBasicAuthentication_8`: `true` (Enable Basic Authentication for ERP)
-    - `pr-key-alias`: `` (Private Key Alias)
-    - `Host`: `COD` (Host name for COD)
-    - `ERP_address_1`: `/ERP/COD/SimpleConnect` (Address for ERP)
-    - `issuer`: `` (Issuer for Authentication)
+    - COD_enableBasicAuthentication_6: 0 (Enable Basic Authentication on COD side)
+    - subject:  (Subject for authentication)
+    - ERP_wsdlURL_0: /wsdl/ConnectivityCheckConsumer.wsdl (WSDL URL for ERP)
+    - Port: 443 (Port for COD)
+    - artifactname:  (Credential Name)
+    - ERP_enableBasicAuthentication_8: true (Enable Basic Authentication on ERP side)
+    - pr-key-alias:  (Private Key Alias)
+    - Host: COD (Host for COD)
+    - ERP_address_1: /ERP/COD/SimpleConnect (Address for ERP)
+    - issuer:  (Issuer for authentication)
 
 - **DataStore / JMS Dependency**
 Not Found
