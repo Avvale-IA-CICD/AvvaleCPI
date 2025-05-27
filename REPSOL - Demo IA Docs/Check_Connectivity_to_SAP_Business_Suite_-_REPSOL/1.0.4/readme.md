@@ -1,13 +1,13 @@
-**iFlowId**: Check_Connectivity_to_SAP_Business_Suite_-_REPSOL - **iFlowVersion**: 1.0
+**iFlowId**: Check_Connectivity_to_SAP_Business_Suite_-_REPSOL - **iFlowVersion**: 1.0.4
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
     COD[COD]
     ERP[ERP]
-    Start[Start]
-    Mapping[Mapping]
-    End[End]
+    Start(Start)
+    Mapping(Mapping)
+    End(End)
 
     COD -- SOAP Adapter --> Start
     Start --> Mapping
@@ -20,44 +20,44 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via SAP Integration Suite.
+  This iFlow performs an end-to-end connectivity check from SAP Cloud for Customer (COD) to SAP ERP via Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - COD (EndpointSender): SOAP Adapter
-    - ERP (EndpointRecevier): SOAP Adapter
+  - COD (EndpointSender): SOAP Adapter
+  - ERP (EndpointRecevier): SOAP Adapter
 
 - **Key steps**
-1.  The iFlow starts when a message is received from the COD system via the SOAP adapter.
-2.  A mapping step (`COD_ERP_CheckEnd2EndConnectivity.opmap`) transforms the message.
-3.  The transformed message is then sent to the ERP system via the SOAP adapter.
+  1. The iFlow starts with a message from the COD system.
+  2. A mapping step transforms the message (COD_ERP_CheckEnd2EndConnectivity.opmap).
+  3. The transformed message is then sent to the ERP system.
 
 - **Message transformation**
-    - Mapping: `COD_ERP_CheckEnd2EndConnectivity.opmap`
+  The iFlow includes a mapping step that transforms the message from COD to ERP format using the `COD_ERP_CheckEnd2EndConnectivity.opmap` mapping.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `ERP_authentication_5`: Client Certificate
-    - `Protocol-Hostname-Port`: https://erphost:443
-    - `subject`: cn=subject
-    - `artifactname`: (Empty)
-    - `p-key-alias`: (Empty)
-    - `ERP_allowChunking_3`: 1
-    - `issuer`: cn=issuer
-    - `ERP_proxyType_4`: default
-    - `COD_enableBasicAuthentication_3`: true
-    - `COD_wsdlURL_1`: /wsdl/CheckConnectivityConsumer.wsdl
-    - `ERP_cleanupHeaders_2`: 1
-    - `location-id`: (Empty)
-    - `Client`: 100
-    - `COD_address_2`: /COD/ERP/SimpleConnect
+  - `ERP_authentication_5`: Configured Value: Client Certificate. Description: Specifies the authentication method for the ERP system.
+  - `Protocol-Hostname-Port`: Configured Value: `https://erphost:443`. Description: Hostname and Port of ERP system.
+  - `subject`: Configured Value: `cn=subject`. Description: Subject for certificate authentication.
+  - `artifactname`: Configured Value: (empty). Description: Credential Name.
+  - `p-key-alias`: Configured Value: (empty). Description: Private Key Alias.
+  - `ERP_allowChunking_3`: Configured Value: `1`. Description: Flag indicating whether chunking is allowed.
+  - `issuer`: Configured Value: `cn=issuer`. Description: Issuer for certificate authentication.
+  - `ERP_proxyType_4`: Configured Value: `default`. Description: Proxy Type.
+  - `COD_enableBasicAuthentication_3`: Configured Value: `true`. Description: Flag indicating whether basic authentication is enabled for COD.
+  - `COD_wsdlURL_1`: Configured Value: `/wsdl/CheckConnectivityConsumer.wsdl`. Description: WSDL URL for COD.
+  - `ERP_cleanupHeaders_2`: Configured Value: `1`. Description: Flag indicating whether headers should be cleaned up.
+  - `location-id`: Configured Value: (empty). Description: Location ID.
+  - `Client`: Configured Value: `100`. Description: Client ID for ERP.
+  - `COD_address_2`: Configured Value: `/COD/ERP/SimpleConnect`. Description: Address for COD.
 
 - **DataStore / JMS Dependency**
-Not Found
+  Not Found
 
 - **Cloud Connector Dependency**
-Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-Not Found
+  Not Found
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+  Not Found
