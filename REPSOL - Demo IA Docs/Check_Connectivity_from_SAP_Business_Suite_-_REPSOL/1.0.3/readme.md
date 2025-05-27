@@ -1,12 +1,12 @@
-**iFlowId**: Check_Connectivity_from_SAP_Business_Suite_-_REPSOL - **iFlowVersion**: 1.0
+**iFlowId:** Check_Connectivity_from_SAP_Business_Suite_-_REPSOL - **iFlowVersion:** 1.0
 
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    ERP[ERP] -->|SOAP Adapter| Start
-    Start --> Mapping
-    Mapping --> End
-    End -->|SOAP Adapter| COD[COD]
+    ERP[ERP] -->|SOAP Adapter| StartEvent
+    StartEvent[Start Event] --> Mapping
+    Mapping[Mapping] --> EndEvent
+    EndEvent[End Event] -->|SOAP Adapter| COD[COD]
 ```
 **BPMN Diagram**
 
@@ -14,40 +14,40 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-The iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer (COD) via SAP Integration Suite.
+  This iFlow performs an end-to-end connectivity check from SAP ERP to SAP Cloud for Customer (COD) via SAP Integration Suite.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - ERP (EndpointSender): SOAP Adapter
-    - COD (EndpointRecevier): SOAP Adapter
+    - ERP (EndpointSender): SOAP Adapter (HTTP transport, Plain SOAP message protocol)
+    - COD (EndpointRecevier): SOAP Adapter (HTTP transport, Plain SOAP message protocol)
 
 - **Key steps**
- 1. Receive message from ERP via SOAP adapter.
- 2. Perform message mapping using the `ERP_COD_ConnectivityCheck` operation mapping.
- 3. Send message to COD via SOAP adapter.
+    1. Receive a message from ERP via SOAP.
+    2. Perform a mapping using Operation Mapping `ERP_COD_ConnectivityCheck`.
+    3. Send the transformed message to COD via SOAP.
 
 - **Message transformation**
-    - An operation mapping named `ERP_COD_ConnectivityCheck` is used to transform the message.
+    - The iFlow uses the `ERP_COD_ConnectivityCheck` operation mapping located at `dir://opmap/src/main/resources/mapping/ERP_COD_ConnectivityCheck.opmap`.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `COD_enableBasicAuthentication_6`: Configured Value: `0`. Description: Not provided in the iFlow definition, but probably enables or disables basic authentication on the COD receiver adapter.
-    - `subject`: Configured Value: ``. Description: Not provided, likely related to security certificates.
-    - `ERP_wsdlURL_0`: Configured Value: `/wsdl/ConnectivityCheckConsumer.wsdl`. Description: The WSDL URL for the ERP sender adapter.
-    - `Port`: Configured Value: `443`. Description: The port used for the COD endpoint.
-    - `artifactname`: Configured Value: ``. Description: Name of the credential artifact used for COD.
-    - `ERP_enableBasicAuthentication_8`: Configured Value: `true`. Description: Enables basic authentication on the ERP sender adapter.
-    - `pr-key-alias`: Configured Value: ``. Description: Alias for the private key.
-    - `Host`: Configured Value: `COD`. Description: The host name for the COD endpoint.
-    - `ERP_address_1`: Configured Value: `/ERP/COD/SimpleConnect`. Description: The address for the ERP sender adapter.
-    - `issuer`: Configured Value: ``. Description: Not provided, likely related to security certificates.
+    - `COD_enableBasicAuthentication_6`: Configured Value: `0`. Description: Not Available
+    - `subject`: Configured Value: ``. Description: Not Available
+    - `ERP_wsdlURL_0`: Configured Value: `/wsdl/ConnectivityCheckConsumer.wsdl`. Description: Not Available
+    - `Port`: Configured Value: `443`. Description: Not Available
+    - `artifactname`: Configured Value: ``. Description: Not Available
+    - `ERP_enableBasicAuthentication_8`: Configured Value: `true`. Description: Not Available
+    - `pr-key-alias`: Configured Value: ``. Description: Not Available
+    - `Host`: Configured Value: `COD`. Description: Not Available
+    - `ERP_address_1`: Configured Value: `/ERP/COD/SimpleConnect`. Description: Not Available
+    - `issuer`: Configured Value: ``. Description: Not Available
 
 - **DataStore / JMS Dependency**
-Not Found
+  Not Found
 
 - **Cloud Connector Dependency**
-Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-Not Found
+  Not Found
 
 - **ProcessDirect ComponentType Dependency**
-Not Found
+  Not Found
