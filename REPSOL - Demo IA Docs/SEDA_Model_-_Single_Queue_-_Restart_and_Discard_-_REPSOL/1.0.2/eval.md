@@ -1,41 +1,41 @@
 **iFlowId**: SEDA_Model_-_Single_Queue_-_Restart_and_Discard_-_REPSOL - **iFlowVersion**: 1.0.2
 
 **Best Practices Summary**
--   **Iflow Steps Naming** -> 🟢 Ok\\n
-    The iFlow steps appear to be reasonably named, with no generic names like "Sender" or "Receiver" detected in the callActivity elements.
+- **Iflow Steps Naming** -> 🔴 Check Required\
+    Some `callActivity` elements such as "Custom Status" and "Set Headers" could have more descriptive names.
 
--   **Monitoring Standard Headers** -> 🟢 Ok\\n
-    The iFlow uses standard headers such as SAP_Sender, SAP_Receiver, and SAP_MessageType, which aids in monitoring.
+- **Monitoring Standard Headers** -> 🟢 Ok\
+    The iFlow uses standard headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType` in several steps.
 
--   **Monitoring Custom Headers** -> 🔴 Check Required\\n
-    The analysis cannot confirm the presence of custom headers specifically designed to enhance payload search and filtering. Further inspection is needed.
+- **Monitoring Custom Headers** -> 🔴 Check Required\
+    The iFlow uses `SAP_MessageProcessingLogCustomStatus` which is a custom header, but could be improved enhancing payload search and filtering.
 
--   **Iflow Metadata** -> 🟢 Ok\\n
-    The metainfo.prop file contains values for source, target, and description.
+- **Iflow Metadata** -> 🟢 Ok\
+    The `metainfo.prop` file contains values for source, target, and description.
 
--   **Iflow Id** -> 🔴 Check Required\\n
-    The Bundle-SymbolicName in the MANIFEST.MF file is `SEDA_Model_-_Single_Queue_-_Restart_and_Discard_-_R EPSOL`. This uses underscores and hyphens which is not according to java notation.
-    
--   **Parameter Externalization** -> 🟢 Ok\\n
-    The iFlow externalizes parameters like queue names, retry intervals, and expiration periods.
+- **Iflow Id** -> 🔴 Check Required\
+    The `Bundle-SymbolicName` in `MANIFEST.MF` is `SEDA_Model_-_Single_Queue_-_Restart_and_Discard_-_R EPSOL`. It should use a java class style notation (e.g., `com.example.iflow`).
 
--   **Error Handling** -> 🟢 Ok\\n
-    The iFlow includes error handling mechanisms with exception subprocesses and logging for asynchronous exceptions.
+- **Parameter Externalization** -> 🟢 Ok\
+    The iFlow externalizes several parameters, including queue names, retry intervals, and expiration periods.
 
--   **Local Script Security** -> 🟢 Ok\\n
-    The groovy scripts do not contain the com.sap.it.api.securestore or com.sap.it.api.keystore packages.
+- **Error Handling** -> 🟢 Ok\
+    The iFlow implements error handling using error sub-processes in each integration process to handle exceptions, set custom status and log errors.
 
--   **Iflow Organization** -> 🟢 Ok\\n
-    The iFlow does not appear to have an excessive number of call activities within a single sequence flow.
+- **Local Script Security** -> 🟢 Ok\
+    The iFlow doesn't use the classes `com.sap.it.api.securestore` or `com.sap.it.api.keystore` in groovy scripts.
 
--   **Iflow Attachments** -> 🟢 Ok\\n
-    The iFlow does not log attachments for succesful messages.
+- **Iflow Organization** -> 🟢 Ok\
+    No single `SequenceFlow` contains more than 10 `callActivity` elements.
 
--   **IDoc Rules** -> 🟡 Does not apply\\n
-    The iFlow does not appear to handle IDoc messages.
+- **Iflow Attachments** -> 🟢 Ok\
+    The iFlow doesn't seem to be creating attachments in groovy scripts for successful messages using `messageLogFactory`.
 
--   **File Rules** -> 🟡 Does not apply\\n
-    The iFlow does not appear to handle file messages.
+- **IDoc Rules** -> 🟡 Does not apply\
+    The iflow doesn't appear to be processing IDocs.
 
--   **Inbound Endpoint Rules** -> 🔴 Check Required\\n
-    The iFlow exposes an endpoint with HTTPS Sender Adapter and uses `ESBMessaging.send` role, which is considered insecure, and the iflow is not configured to allow Basic Auth.
+- **File Rules** -> 🟡 Does not apply\
+    The iflow doesn't appear to be processing files.
+
+- **Inbound Endpoint Rules** -> 🔴 Check Required\
+    The iFlow exposes an endpoint with HTTPS Sender Adapter and uses `ESBMessaging.send` role, it's recommended to avoid basic auth.
