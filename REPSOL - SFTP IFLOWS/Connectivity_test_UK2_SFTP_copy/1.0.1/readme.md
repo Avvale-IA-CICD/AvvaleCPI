@@ -3,13 +3,8 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Participant_21[Sender1] -- SFTP --> StartEvent_22((Start 1))
-    StartEvent_22((Start 1)) --> CallActivity_30[JavaScript 1]
-    CallActivity_30[JavaScript 1] --> CallActivity_25[Transform Filename]
-    CallActivity_25[Transform Filename] --> CallActivity_27[Message Mapping 1]
-    CallActivity_27[Message Mapping 1] --> ServiceTask_16[Send 1]
-    ServiceTask_16[Send 1] -- SFTP --> Participant_2[Receiver]
-    ServiceTask_16[Send 1] --> EndEvent_2((End))
+    Participant_21[Sender1] -- SFTP Adapter --> StartEvent_22
+    ServiceTask_16[Send 1] -- SFTP Adapter --> Participant_2[Receiver]
 ```
 **BPMN Diagram**
 
@@ -17,27 +12,26 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow retrieves a file from an SFTP server, transforms the filename, performs message mapping, and then sends the file to another SFTP server.
+This iFlow retrieves a file from an SFTP server, transforms the filename, maps a message and then sends it to another SFTP server.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Sender1: SFTP (EndpointSender)
-    - Receiver: SFTP (EndpointRecevier)
+  - Sender1 (SFTP, EndpointSender)
+  - Receiver (SFTP, EndpointRecevier)
 
 - **Key steps**
- 1. Start: Receive file from the initial SFTP sender.
- 2. JavaScript 1: Executes a JavaScript script (no script code defined).
- 3. Transform Filename: Executes a Groovy script named "transformFilename.groovy" to modify the filename.
- 4. Message Mapping 1: Performs a message mapping.
- 5. Send 1: Sends the file to the destination SFTP receiver.
- 6. End: Completes the iFlow.
+  1. Retrieve file from SFTP server using Sender1 adapter.
+  2. Execute a JavaScript.
+  3. Transform Filename via Groovy Script.
+  4. Perform message mapping.
+  5. Send the message to SFTP server using Receiver adapter.
 
 - **Message transformation**
-    - Transform Filename: Uses Groovy script `transformFilename.groovy`.
-    - Message Mapping 1: Message Mapping activity configured, but mapping name is not set (empty values for mappinguri and mappingname)
+  - Transform Filename using `transformFilename.groovy` script.
+  - Message Mapping (no specific mapping specified in the XML)
 
 - **Externalized parameters list, configured values and their descriptions**
-    - `host`: Configured value: `portaluk2.rg.repsol.com:22`. Description: SFTP server host and port for the destination SFTP receiver.
-    - `user_uk2`: Configured value: ``. Description: Username for destination SFTP receiver.
+  - host: portaluk2.rg.repsol.com:22 (No description available)
+  - user_uk2:  (No description available)
 
 - **DataStore / JMS Dependency**
 Not Found
