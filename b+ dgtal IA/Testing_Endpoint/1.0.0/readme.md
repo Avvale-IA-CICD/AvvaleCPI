@@ -5,14 +5,11 @@
 graph LR
     Participant_1[Sender]
     Participant_2[Receiver]
-
-    subgraph Participant_Process_1 [Integration Process]
-        StartEvent_2[Start]
-        EndEvent_2[End]
-        StartEvent_2 --> EndEvent_2
-    end
+    StartEvent_2[Start]
+    EndEvent_2[End]
 
     Participant_1 -- HTTPS --> StartEvent_2
+    StartEvent_2 --> EndEvent_2
     EndEvent_2 -- IAAdapter --> Participant_2
 ```
 **BPMN Diagram**
@@ -20,31 +17,31 @@ graph LR
 ![BPMN Diagram](./Testing_Endpoint-1.0.0.png "BPMN Diagram")
 
 **Functional Summary**
-- **Brief description of the iFlow**:
-  This iFlow receives a message via HTTPS, then sends it to an IAAdapter endpoint.
+- **Brief description of the iFlow**
+  This iFlow receives a message via HTTPS, and then sends it to a receiver system using the IAAdapter.
 
-- **Involved systems with Adapters Type and Endpoint Type**:
+- **Involved systems with Adapters Type and Endpoint Type**
   - Sender: HTTPS (EndpointSender)
   - Receiver: IAAdapter (EndpointRecevier)
 
-- **Key steps**:
+- **Key steps**
   1. Receive message via HTTPS.
-  2. Send message to IAAdapter.
+  2. Send message to Receiver using IAAdapter.
 
-- **Message transformation**:
-  No message transformation steps are explicitly defined in the provided XML.
+- **Message transformation**
+  No message transformation steps are explicitly defined in this iFlow.
 
-- **Externalized parameters list, configured values and their descriptions**:
-  No externalized parameters are defined in the provided parameters.prop file.
+- **Externalized parameters list, configured values and their descriptions**
+  No externalized parameters found in `parameters.prop`.
 
-- **DataStore / JMS Dependency**:
+- **DataStore / JMS Dependency**
   Not Found
 
-- **Cloud Connector Dependency**:
+- **Cloud Connector Dependency**
   Not Found
 
-- **Common Scripts Dependency**:
+- **Common Scripts Dependency**
   Not Found
 
-- **ProcessDirect ComponentType Dependency**:
+- **ProcessDirect ComponentType Dependency**
   Not Found
