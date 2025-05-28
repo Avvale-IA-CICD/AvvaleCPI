@@ -6,81 +6,63 @@ markdown
 
 ```mermaid
 graph LR
-    BC_SENDER --> SOAP[StartEvent_2]
-    StartEvent_2 --> ExtractData[CallActivity_20]
-    ExtractData --> ExtractPayload[CallActivity_95246099]
-    ExtractPayload --> CH_STEP[CallActivity_95246175]
-    CH_STEP --> Base64Encode[CallActivity_95246103]
-    Base64Encode --> PrepareBody[CallActivity_80508921]
-    PrepareBody --> LogRequest[CallActivity_95245819]
-    LogRequest --> ProcessDirect[ServiceTask_7]
-    ProcessDirect --> LogResponse[CallActivity_95245816]
-    LogResponse --> CreateStructure[CallActivity_95246166]
-    CreateStructure --> SaveToDocumentum[CallActivity_95246172]
-    SaveToDocumentum --> SaveHeader[CallActivity_95245924]
-    SaveHeader --> Base64Decoder[CallActivity_95246105]
-    Base64Decoder --> Router[ExclusiveGateway_95246140]
-    Router -- Route1 --> DSAEAT[CallActivity_95246108]
-    DSAEAT --> EndEvent[EndEvent_95246157]
-    Router -- Route2 --> ConvertHeaders[CallActivity_95246143]
-    ConvertHeaders --> DeleteHeaders[CallActivity_95246144]
-    DeleteHeaders --> RequestReply2[ServiceTask_95246145]
-    RequestReply2 --> ExtractRoot[CallActivity_95246212]
-    ExtractRoot --> GenerateResponse[CallActivity_95246214]
-    GenerateResponse --> EndEvent
+    BC_SENDER --> SOAP[SOAP Adapter] --> StartEvent_2
+    StartEvent_2 --> CallActivity_20
+    CallActivity_20 --> CallActivity_95246099
+    CallActivity_95246099 --> CallActivity_95246175
+    CallActivity_95246175 --> CallActivity_95246103
+    CallActivity_95246103 --> CallActivity_80508921
+    CallActivity_80508921 --> CallActivity_95245819
+    CallActivity_95245819 --> ServiceTask_7
+    ServiceTask_7 --> ProcessDirect[ProcessDirect Adapter] --> FIRMA_SIAVAL
+    ServiceTask_7 --> CallActivity_95245816
+    CallActivity_95245816 --> CallActivity_95246166
+    CallActivity_95246166 --> CallActivity_95246172
+    CallActivity_95246172 --> CallActivity_95245924
+    CallActivity_95245924 --> CallActivity_95246105
+    CallActivity_95246105 --> ExclusiveGateway_95246140
+    ExclusiveGateway_95246140 -- Route 1 --> CallActivity_95246108
+    CallActivity_95246108 --> EndEvent_95246157
+    ExclusiveGateway_95246140 -- Route 2 --> CallActivity_95246143
+    CallActivity_95246143 --> CallActivity_95246144
+    CallActivity_95246144 --> ServiceTask_95246145
+    ServiceTask_95246145 --> CallActivity_95246212
+    CallActivity_95246212 --> CallActivity_95246214
+    CallActivity_95246214 --> EndEvent_95246157
 
-    style BC_SENDER fill:#f9f,stroke:#333,stroke-width:2px
-    style EndEvent fill:#ccf,stroke:#333,stroke-width:2px
+    StartEvent_80508888 --> ExclusiveGateway_80508899
+    ExclusiveGateway_80508899 -- Process --> CallActivity_80508900
+    CallActivity_80508900 --> CallActivity_95246198
+    CallActivity_95246198 --> CallActivity_80508927
+    CallActivity_80508927 --> CallActivity_95246180
+    CallActivity_95246180 --> CallActivity_95246177
+    CallActivity_95246177 --> ServiceTask_95246189
+    ServiceTask_95246189 --> SOAP[SOAP Adapter] --> DOCUMENTUM
+    ServiceTask_95246189 --> CallActivity_95245822
+    CallActivity_95245822 --> EndEvent_95246193
+    ExclusiveGateway_80508899 -- Discard --> CallActivity_80508898
+    CallActivity_80508898 --> EndEvent_80508909
 
-    FIRMA_SIAVAL[Participant_2]
-    ProcessDirect -- ProcessDirect --> FIRMA_SIAVAL
-```
+    StartEvent_95246114 --> ExclusiveGateway_95246120
+    ExclusiveGateway_95246120 -- Route 1 --> CallActivity_95246135
+    CallActivity_95246135 --> CallActivity_95246138
+    CallActivity_95246138 --> ServiceTask_95246116
+    ServiceTask_95246116 --> SOAP[SOAP Adapter] --> AEAT
+    ServiceTask_95246116 --> CallActivity_95246208
+    CallActivity_95246208 --> CallActivity_95246218
+    CallActivity_95246218 --> EndEvent_95246115
+    ExclusiveGateway_95246120 -- Discard --> CallActivity_95246121
+    CallActivity_95246121 --> EndEvent_95246122
 
-```mermaid
-graph LR
-    DS_AEAT --> StartEvent_95246114
-    StartEvent_95246114 --> Router2[ExclusiveGateway_95246120]
-    Router2 -- Route1 --> ConvertHeaders2[CallActivity_95246135]
-    ConvertHeaders2 --> DeleteHeaders2[CallActivity_95246138]
-    DeleteHeaders2 --> RequestReply1[ServiceTask_95246116]
-    RequestReply1 --> ExtractRoot2[CallActivity_95246208]
-    ExtractRoot2 --> GenerateResponse2[CallActivity_95246218]
-    GenerateResponse2 --> EndEvent_95246115
+    Participant_95246112 --> DataStore[DataStore Adapter] --> StartEvent_95246114
+    Participant_80508887 --> DataStore[DataStore Adapter] --> StartEvent_80508888
 
-    AEAT[Participant_95246113]
-    RequestReply1 -- SOAP --> AEAT
-
-    style DS_AEAT fill:#f9f,stroke:#333,stroke-width:2px
-    style EndEvent_95246115 fill:#ccf,stroke:#333,stroke-width:2px
-```
-
-```mermaid
-graph LR
-    DS_FIRMA --> StartEvent_80508888
-    StartEvent_80508888 --> Router3[ExclusiveGateway_80508899]
-    Router3 -- Process --> MaintainHeaders[CallActivity_80508900]
-    MaintainHeaders --> LogRequest2[CallActivity_95246198]
-    LogRequest2 --> SetCustomHeaders[CallActivity_80508927]
-    SetCustomHeaders --> Base64Encoder1[CallActivity_95246180]
-    Base64Encoder1 --> PayloadToJX0[CallActivity_95246177]
-    PayloadToJX0 --> RequestReply3[ServiceTask_95246189]
-    RequestReply3 --> LogResponse3[CallActivity_95245822]
-    LogResponse3 --> EndEvent_95246193
-
-    DOCUMENTUM[Participant_80508889]
-    RequestReply3 -- SOAP --> DOCUMENTUM
-
-    style DS_FIRMA fill:#f9f,stroke:#333,stroke-width:2px
-    style EndEvent_95246193 fill:#ccf,stroke:#333,stroke-width:2px
-```
-
-```mermaid
-graph LR
-    ServiceTask_80508853 -- ProcessDirect --> AlertReceiver
-
-    AlertReceiver[Participant_8287215]
-
-    style AlertReceiver fill:#f9f,stroke:#333,stroke-width:2px
+    StartEvent_80508843 --> CallActivity_8287205
+    CallActivity_8287205 --> ExclusiveGateway_8287208
+    ExclusiveGateway_8287208 -- true --> ServiceTask_80508853
+    ServiceTask_80508853 --> ProcessDirect[ProcessDirect Adapter] --> AlertReceiver
+    ExclusiveGateway_8287208 -- false --> EndEvent_80508844
+    ServiceTask_80508853 --> EndEvent_80508844
 ```
 **BPMN Diagram**
 
@@ -88,86 +70,82 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow processes documents, signs them, and sends them to AEAT (Spanish Tax Agency) and Documentum. It includes exception handling and logging mechanisms. The flow involves extracting data, transforming messages, and interacting with external systems via SOAP and ProcessDirect adapters. Retries are managed using DataStore.
+  This iFlow manages the integration with AEAT (Spanish Tax Agency) and Documentum for EMCS (Excise Movement and Control System) processes related to Repsol. It handles document signing, submission to AEAT, and archival in Documentum.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - BC_SENDER: SOAP, HTTP (Sender)
-    - DS_FIRMA: DataStoreConsumer, JDBC (Sender)
-    - DS_AEAT: DataStoreConsumer, JDBC (Sender)
-    - FIRMA_SIAVAL: ProcessDirect, Not Applicable (Receiver)
-    - AlertReceiver: ProcessDirect, Not Applicable (Receiver)
-    - DOCUMENTUM: SOAP, HTTP (Receiver)
-    - AEAT: SOAP, HTTP (Receiver)
-    - AEAT_Actual: SOAP, HTTP (Receiver)
+    - BC_SENDER (SOAP, EndpointSender)
+    - FIRMA_SIAVAL (ProcessDirect, EndpointRecevier)
+    - AEAT (SOAP, EndpointRecevier)
+    - AEAT_Actual (SOAP, EndpointRecevier)
+    - DOCUMENTUM (SOAP, EndpointRecevier)
+    - DS_AEAT (DataStoreConsumer, EndpointSender)
+    - DS_FIRMA (DataStoreConsumer, EndpointSender)
+    - AlertReceiver (ProcessDirect, EndpointRecevier)
 
 - **Key steps**
-    1. Receives a document from BC_SENDER via SOAP.
-    2. Extracts data and parameters from the document.
-    3. Signs the document using FIRMA_SIAVAL via ProcessDirect.
-    4. Encodes the signed document in Base64.
-    5. Creates a structure to send the document to Documentum.
-    6. Saves the document to the DataStore DS_AEAT and ReqSignedToDocumentum
-    7. Sends the document to DOCUMENTUM via SOAP.
-    8. Sends the signed document to AEAT via SOAP or ProcessDirect.
-    9. Handles exceptions and sends notifications if necessary.
+    1. Receives a SOAP request from BC_SENDER.
+    2. Extracts payload and parameters, prepares the body for signing, and sends it to FIRMA_SIAVAL via ProcessDirect.
+    3. After receiving signed document, it send this document to AEAT using SOAP adapter
+    4. Generates the required structure and store into Documentum using SOAP adapter.
+    5. Save the signed document to DataStore.
+    6. Handle exception in case of errors or receiver not found.
 
 - **Message transformation**
-    - "Prepare body to SIA" Enricher step transform the message to `<ns:DocumentSignModuleRequest>`
-    - Payload to JX0 Enricher step transform the message to `<ns1:insertarDocumento xmlns:ns1="http://repsol.com/pi/emcs/ejb/tipos/">`
-    - Create Structure to Send Documentum Enricher step transform the message to `<p:documentoAEAT xmlns:p="http://repsol.com/emcs/documentoAeat">`
-    - Generate Response Body - Copy and Generate Response Body enrichers transform the message to `<emis:respuesta xmlns:emis="http://repsol.com/emcs/intracomunitario/emisionBorradorV32">`
-    - The iFlow also perform Base64 encode / decode operations.
+    - Payload is extracted and prepared for signing.
+    - Payload is wrapped in specific XML structures for different systems (SIA, Documentum, AEAT).
+    - Headers are converted into properties and vice-versa.
+    - Base64 encoding/decoding is used for handling signed documents.
 
 - **Externalized parameters list, configured values (read from parameters.prop) and their descriptions**
-    - data_firma: ZFACTURAE_FRM_FIRMADO (Description not found)
-    - PD_Documentum: /modules/documentManager/documentum/documents/archiveSAP (Description not found)
-    - PathDocumentum: /D.E.Marketing Europa/Facturas/Sin Procesar (Description not found)
-    - SENDER_AUTH: RoleBased (Description not found)
-    - SENDER_BC: Sender (Description not found)
-    - LocationID: SCC_INT_SUITE_AWS_EU (Description not found)
-    - TimeoutUK2: 120000 (Description not found)
-    - DS_NAME: ZFACTURAE_FRM (Description not found)
-    - UserDocumentum: SVC_TSAPFACGLP@rg.repsol.com (Description not found)
-    - HostUX2: http\://portaluk2.rg.repsol.com\:2543/sap/bc/srt/Idoc (Description not found)
-    - RepositorioDocumentum: reptestdocum (Description not found)
-    - DS_FTP: DS_FTP (Description not found)
-    - Sender_Endpoint: /AEAT/EMCS (Description not found)
-    - FacType: do_fac_glfdeac (Description not found)
-    - DS_MAIL_ZFACTURAE_FRM: DS_MAIL_ZFACTURAE_FRM (Description not found)
-    - BAPIRET: BAPIRET2 (Description not found)
-    - PrivateKeyLoginAeat: \${property.NIF} (Description not found)
-    - SENDER_ENDPOINT: /ZFACTURAE (Description not found)
-    - ELK_AUTH: ELK_LOGGER (Description not found)
-    - Logging: true (Description not found)
-    - ELK_LOCATION_ID:  (Description not found)
-    - AEAT_ADDRESS: https\://prewww1.aeat.es/wlpl/inwinvoc/es.aeat.dit.adu.adi1.emcssw.Ie815V32SOAP (Description not found)
-    - MAX_RETRIES: 2 (Description not found)
-    - DS_Bapiret2: DS_Bapiret2 (Description not found)
-    - DS_AEAT: DS_AEAT (Description not found)
-    - Credential_UX2: SAP UK2 (Description not found)
-    - ELK_ENDPOINT: https\://ingestaelastic.repsol.com\:9200/logs_isuite_poc/_doc (Description not found)
-    - SMTP: smtp.repsol.com\:25 (Description not found)
-    - Email_Notification: true (Description not found)
-    - SAP_MessageType: CD815A (Description not found)
-    - AuthJX0: AuthJX0 (Description not found)
-    - ReqSignedToDocumentum: ReqSignedToDocumentum (Description not found)
-    - DS_Mail_Notif: DS_Mail_Notif (Description not found)
-    - DocumentumJX0: http\://portaljk0.rg.repsol.com\:443/ActualizacionBandejaService/EMCSInternoActualizacionBandeja (Description not found)
-    - TimeoutMail: 30000 (Description not found)
-    - ELK_PROXY_TYPE: Internet (Description not found)
+    - `data_firma`: ZFACTURAE_FRM_FIRMADO (Data type of the firm)
+    - `PD_Documentum`: /modules/documentManager/documentum/documents/archiveSAP (Path for Documentum integration)
+    - `PathDocumentum`: /D.E.Marketing Europa/Facturas/Sin Procesar (Repository path inside Documentum)
+    - `SENDER_AUTH`: RoleBased (Authentication type of sender)
+    - `SENDER_BC`: Sender (Name of sender)
+    - `LocationID`: SCC_INT_SUITE_AWS_EU (Location ID)
+    - `TimeoutUK2`: 120000 (Timeout for UK2)
+    - `DS_NAME`: ZFACTURAE_FRM (Datastore name)
+    - `UserDocumentum`: SVC_TSAPFACGLP@rg.repsol.com (Username for documentum service)
+    - `HostUX2`: http\://portaluk2.rg.repsol.com\:2543/sap/bc/srt/Idoc (Host for UK2 service)
+    - `RepositorioDocumentum`: reptestdocum (Documentum repository name)
+    - `DS_FTP`: DS_FTP (FTP Datastore name)
+    - `Sender_Endpoint`: /AEAT/EMCS (Sender Endpoint URL)
+    - `FacType`: do_fac_glfdeac (Type of facture)
+    - `DS_MAIL_ZFACTURAE_FRM`: DS_MAIL_ZFACTURAE_FRM (Mail Datastore name for facture)
+    - `BAPIRET`: BAPIRET2 (Return message type)
+    - `PrivateKeyLoginAeat`: \${property.NIF} (Private key alias for AEAT login)
+    - `SENDER_ENDPOINT`: /ZFACTURAE (Sender Endpoint URL)
+    - `ELK_AUTH`: ELK_LOGGER (Authentication method for ELK)
+    - `Logging`: true (Flag to enable/disable logging)
+    - `ELK_LOCATION_ID`:   (ELK location id)
+    - `AEAT_ADDRESS`: https\://prewww1.aeat.es/wlpl/inwinvoc/es.aeat.dit.adu.adi1.emcssw.Ie815V32SOAP (AEAT SOAP Address)
+    - `MAX_RETRIES`: 2 (Maximum retries)
+    - `DS_Bapiret2`: DS_Bapiret2 (Datastore for BAPI Return 2)
+    - `DS_AEAT`: DS_AEAT (Datastore name for AEAT)
+    - `Credential_UX2`: SAP UK2 (Credentials for UX2)
+    - `ELK_ENDPOINT`: https\://ingestaelastic.repsol.com\:9200/logs_isuite_poc/_doc (ELK endpoint URL)
+    - `SMTP`: smtp.repsol.com\:25 (SMTP server address)
+    - `Email_Notification`: true (Flag to enable/disable email notification)
+    - `SAP_MessageType`: CD815A (SAP message type)
+    - `AuthJX0`: AuthJX0 (Credentials for JX0)
+    - `ReqSignedToDocumentum`: ReqSignedToDocumentum (Datastore name for signed documents for Documentum)
+    - `DS_Mail_Notif`: DS_Mail_Notif (Datastore for email notifications)
+    - `DocumentumJX0`: http\://portaljk0.rg.repsol.com\:443/ActualizacionBandejaService/EMCSInternoActualizacionBandeja (Endpoint to Documentum)
+    - `TimeoutMail`: 30000 (Timeout for Mail process)
+    - `ELK_PROXY_TYPE`: Internet (ELK Proxy Type)
 
 - **DataStore / JMS Dependency**
-Yes
+    Yes
 
 - **Cloud Connector Dependency**
-Yes
+    Yes
 
 - **Common Scripts Dependency**
     - Common_-_Groovy_Logging_Scripts (scriptBundleId)
-        - Log_XML_Request.groovy (script)
-        - Log_XML_Response.groovy (script)
-        - Log_Discarded_Message.groovy (script)
-        - Log_Exception.groovy (script)
+        - Log_XML_Request.groovy
+        - Log_XML_Response.groovy
+        - Log_Discarded_Message.groovy
+        - Log_Exception.groovy
 
 - **ProcessDirect ComponentType Dependency**
     - /modules/Signature/SignDoc
