@@ -3,14 +3,11 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Participant_1[Sender]
-    Participant_2[Receiver]
-    StartEvent_2[Start]
-    EndEvent_2[End]
-
-    Participant_1 -- HTTPS --> StartEvent_2
-    StartEvent_2 --> EndEvent_2
-    EndEvent_2 -- IAAdapter --> Participant_2
+    subgraph IntegrationFlow
+    Participant_1[Sender] -- HTTPS --> StartEvent_2(Start)
+    StartEvent_2 --> EndEvent_2(End)
+    EndEvent_2 -- IAAdapter --> Participant_2[Receiver]
+    end
 ```
 **BPMN Diagram**
 
@@ -18,31 +15,31 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-  This iFlow receives a message via HTTPS, passes it through an integration process, and then sends it to a receiver using the IAAdapter.
+  This iFlow receives an HTTPS request, processes it, and sends the result to an IAAdapter.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-    - Sender: HTTPS (EndpointSender)
-    - Receiver: IAAdapter (EndpointRecevier)
+  - Sender: HTTPS (EndpointSender)
+  - Receiver: IAAdapter (EndpointRecevier), Endpoint: `https://aiobs-oai-int-fc.openai.azure.com/`
 
 - **Key steps**
-    1. Receive message via HTTPS adapter from Sender.
-    2. Process the message within the Integration Process.
-    3. Send the message via IAAdapter to Receiver.
+  1. Receive HTTPS request.
+  2. Process the message within the Integration Process (Start to End).
+  3. Send message to IAAdapter.
 
 - **Message transformation**
-    - No message transformation steps are explicitly defined in this iFlow.
+  No specific message transformation steps are defined in the provided BPMN. It's a direct flow from start to end.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - No externalized parameters found in parameters.prop file.
+  No externalized parameters were found in the `parameters.prop` file.
 
 - **DataStore / JMS Dependency**
-    Not Found
+  Not Found
 
 - **Cloud Connector Dependency**
-    Not Found
+  Not Found
 
 - **Common Scripts Dependency**
-    Not Found
+  Not Found
 
 - **ProcessDirect ComponentType Dependency**
-    Not Found
+  Not Found
