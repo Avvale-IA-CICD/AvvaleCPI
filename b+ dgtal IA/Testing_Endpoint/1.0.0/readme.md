@@ -3,14 +3,9 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Participant_1[Sender]
-    Participant_2[Receiver]
-    StartEvent_2[Start]
-    EndEvent_2[End]
-
-    Participant_1 -- HTTPS --> StartEvent_2
-    StartEvent_2 --> EndEvent_2
-    EndEvent_2 -- IAAdapter --> Participant_2
+    Participant_1[Sender] -- HTTPS --> StartEvent_2((Start))
+    StartEvent_2((Start)) --> EndEvent_2((End))
+    EndEvent_2((End)) -- IAAdapter --> Participant_2[Receiver]
 ```
 **BPMN Diagram**
 
@@ -18,7 +13,7 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow receives a message via HTTPS, passes it through an integration process, and then sends it to a receiver using the IAAdapter.
+This iFlow exposes an HTTPS endpoint, receives a message, and sends it to an IAAdapter endpoint.
 
 - **Involved systems with Adapters Type and Endpoint Type**
     - Sender: HTTPS (EndpointSender)
@@ -26,14 +21,13 @@ This iFlow receives a message via HTTPS, passes it through an integration proces
 
 - **Key steps**
     1. Receive message via HTTPS.
-    2. Process message in the Integration Process.
-    3. Send message via IAAdapter to the receiver.
+    2. Send message to IAAdapter.
 
 - **Message transformation**
-    No specific message transformation steps are defined in the provided BPMN XML.
+    - None
 
 - **Externalized parameters list, configured values and their descriptions**
-    No externalized parameters found in the `parameters.prop` file.
+    - None
 
 - **DataStore / JMS Dependency**
     Not Found
