@@ -3,17 +3,14 @@
 **Mermaid Diagram**
 ```mermaid
 graph LR
-    Participant_21 -- SFTP Adapter --> StartEvent_22
-```
-
-```mermaid
-graph LR
-    StartEvent_22 -- SequenceFlow --> CallActivity_30
-    CallActivity_30 -- SequenceFlow --> CallActivity_25
-    CallActivity_25 -- SequenceFlow --> CallActivity_27
-    CallActivity_27 -- SequenceFlow --> ServiceTask_16
-    ServiceTask_16 -- SequenceFlow --> EndEvent_2
-    ServiceTask_16 -- SFTP Adapter --> Participant_2
+    Participant_21[Sender1]
+    Participant_21 -- SFTP --> StartEvent_22((StartEvent_22))
+    StartEvent_22 --> CallActivity_30[JavaScript 1]
+    CallActivity_30 --> CallActivity_25[Transform Filename]
+    CallActivity_25 --> CallActivity_27[Message Mapping 1]
+    CallActivity_27 --> ServiceTask_16[Send 1]
+    ServiceTask_16 -- SFTP --> Participant_2[Receiver]
+    ServiceTask_16 --> EndEvent_2((EndEvent_2))
 ```
 **BPMN Diagram**
 
@@ -21,27 +18,26 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-This iFlow retrieves a file from a source SFTP server, transforms the filename, maps the message, and sends the file to a destination SFTP server.
+This iFlow retrieves a file from an external SFTP server and sends it to another SFTP server after some transformation steps.
 
 - **Involved systems with Adapters Type and Endpoint Type**
     - Sender1: SFTP Adapter (EndpointSender)
     - Receiver: SFTP Adapter (EndpointRecevier)
 
 - **Key steps**
-    1.  Start: Receive file from source SFTP server.
-    2.  JavaScript 1: Perform a javascript.
-    3.  Transform Filename: Rename the file using a Groovy script.
-    4.  Message Mapping 1: Maps the message to new format
-    5.  Send 1: Send the file to the destination SFTP server.
-    6.  End: iFlow execution completed.
+    1. Starts with a timer event, triggered every 10 seconds.
+    2. Executes a JavaScript script.
+    3. Executes a Groovy script called `transformFilename.groovy`.
+    4. Performs a Message Mapping.
+    5. Sends the file to the receiver SFTP server.
 
 - **Message transformation**
-    - Transform Filename: Uses groovy script transformFilename.groovy to rename the incoming file.
-    - Message Mapping 1: Maps the message to new format
+    - A Groovy script named `transformFilename.groovy` is used.
+    - A Message Mapping step is executed.
 
 - **Externalized parameters list, configured values and their descriptions**
-    - host: portaluk2.rg.repsol.com:22 (SFTP server host and port)
-    - user_uk2:  (Username for the destination SFTP server.)
+    - `host`: `portaluk2.rg.repsol.com:22` (SFTP host address for the Receiver)
+    - `user_uk2`: `` (SFTP username for the Receiver)
 
 - **DataStore / JMS Dependency**
 Not Found
