@@ -18,30 +18,31 @@ graph LR
 
 **Functional Summary**
 - **Brief description of the iFlow**
-  This iFlow receives a message via HTTPS, and then sends it to a receiver system using the IAAdapter.
+  This iFlow receives a message via HTTPS, passes it through an integration process, and then sends it to a receiver using the IAAdapter.
 
 - **Involved systems with Adapters Type and Endpoint Type**
-  - Sender: HTTPS (EndpointSender)
-  - Receiver: IAAdapter (EndpointRecevier)
+    - Sender: HTTPS (EndpointSender)
+    - Receiver: IAAdapter (EndpointRecevier)
 
 - **Key steps**
-  1. Receive message via HTTPS.
-  2. Send message to Receiver using IAAdapter.
+    1. Receive message via HTTPS adapter from Sender.
+    2. Process the message within the Integration Process.
+    3. Send the message via IAAdapter to Receiver.
 
 - **Message transformation**
-  No message transformation steps are explicitly defined in this iFlow.
+    - No message transformation steps are explicitly defined in this iFlow.
 
 - **Externalized parameters list, configured values and their descriptions**
-  No externalized parameters found in `parameters.prop`.
+    - No externalized parameters found in parameters.prop file.
 
 - **DataStore / JMS Dependency**
-  Not Found
+    Not Found
 
 - **Cloud Connector Dependency**
-  Not Found
+    Not Found
 
 - **Common Scripts Dependency**
-  Not Found
+    Not Found
 
 - **ProcessDirect ComponentType Dependency**
-  Not Found
+    Not Found
