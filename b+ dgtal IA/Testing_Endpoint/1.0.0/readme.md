@@ -4,9 +4,9 @@
 ```mermaid
 graph LR
     Participant_1[Sender]
-    Participant_2[Receiver]
     StartEvent_2[Start]
     EndEvent_2[End]
+    Participant_2[Receiver]
 
     Participant_1 -- HTTPS --> StartEvent_2
     StartEvent_2 --> EndEvent_2
@@ -17,32 +17,31 @@ graph LR
 ![BPMN Diagram](./Testing_Endpoint-1.0.0.png "BPMN Diagram")
 
 **Functional Summary**
-- **Brief description of the iFlow**
-  This iFlow receives an HTTPS request, passes it through an integration process, and sends the result to an Azure OpenAI endpoint via the IAAdapter.
+- **Brief description of the iFlow**:
+  This iFlow exposes an HTTPS endpoint, receives a request, and sends it to an IAAdapter endpoint.
 
-- **Involved systems with Adapters Type and Endpoint Type**
-  - Sender: HTTPS (EndpointSender)
-  - Receiver: IAAdapter (EndpointRecevier), AzureOpenAI
+- **Involved systems with Adapters Type and Endpoint Type**:
+    - Sender: HTTPS (EndpointSender)
+    - Receiver: IAAdapter (EndpointRecevier)
 
-- **Key steps**
-  1. Receive HTTPS request at `/test/ia`.
-  2. Process the message within the integration process.
-  3. Send the message to Azure OpenAI.
+- **Key steps**:
+    1.  Receive HTTPS request.
+    2.  Send request to IAAdapter.
 
-- **Message transformation**
-  No explicit message transformation steps are defined in the provided XML.
+- **Message transformation**:
+    - No message transformation steps are explicitly defined in the provided XML.
 
-- **Externalized parameters list, configured values and their descriptions**
-  No externalized parameters are defined in the provided `parameters.prop` file.
+- **Externalized parameters list, configured values and their descriptions**:
+    - No externalized parameters found in parameters.prop file.
 
-- **DataStore / JMS Dependency**
-  Not Found
+- **DataStore / JMS Dependency**:
+    - Not Found
 
-- **Cloud Connector Dependency**
-  Not Found
+- **Cloud Connector Dependency**:
+    - Not Found
 
-- **Common Scripts Dependency**
-  Not Found
+- **Common Scripts Dependency**:
+    - Not Found
 
-- **ProcessDirect ComponentType Dependency**
-  Not Found
+- **ProcessDirect ComponentType Dependency**:
+    - Not Found
