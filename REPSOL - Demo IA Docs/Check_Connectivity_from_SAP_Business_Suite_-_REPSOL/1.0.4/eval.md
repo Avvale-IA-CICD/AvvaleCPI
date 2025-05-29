@@ -3,40 +3,40 @@ markdown
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🟢 Ok\
-    * No generic names like Sender, Receiver, Content Modifier, or Router are used for the call activity (Mapping).
+    - The call activity "CallActivity_1" is named "Mapping", which is not a standard name.
 
 - **Monitoring Standard Headers** -> 🔴 Check Required\
-    * The iFlow does not explicitly show usage of standard monitoring headers like SAP_Sender, SAP_Receiver, etc. Need to check the mapping and scripts (if any) to confirm their usage.
+    - The iFlow does not explicitly set any standard headers for monitoring purposes. There's no evidence of SAP_Sender, SAP_Receiver, etc. being used.
 
 - **Monitoring Custom Headers** -> 🔴 Check Required\
-    * The iFlow does not explicitly show usage of custom monitoring headers. Need to check the mapping and scripts (if any) to confirm their usage.
+    - The iFlow does not explicitly set any custom headers for monitoring purposes, to enhance payload search and filtering.
 
 - **Iflow Metadata** -> 🟢 Ok\
-    * The `metainfo.prop` file contains values for source, target, and description.
+    - The `metainfo.prop` file contains values for source, target, and description.
 
 - **Iflow Id** -> 🔴 Check Required\
-    * The `Bundle-SymbolicName` in `MANIFEST.MF` is `Check_Connectivity_from_SAP_Business_Suite_-_REPSOL`. This does not follow the recommended Java notation (using dots and avoiding underscores/hyphens). Should be refactored.
+    - The `Bundle-SymbolicName` in `MANIFEST.MF` is `Check_Connectivity_from_SAP_Business_Suite_-_REPSOL`.  This uses underscores and hyphens, which is not the recommended java notation. It should follow `com.sap.example.iflow.connectivity` format.
 
 - **Parameter Externalization** -> 🟢 Ok\
-    * Important parameters like URLs, authentication settings (enableBasicAuthentication), and credential names are externalized as configurable parameters.
+    - The iFlow externalizes several parameters like URLs, authentication settings, and host information using placeholders like `{{ERP_address_1}}`, `{{Host}}`, `{{Port}}`, and `{{ERP_enableBasicAuthentication_8}}`.
 
 - **Error Handling** -> 🔴 Check Required\
-    * The provided BPMN XML does not explicitly show error handling mechanisms (e.g., exception subprocesses, error events). Needs further investigation to confirm if error handling is implemented.
+    - There is no explicit error handling defined within the provided BPMN XML. There are no exception subprocesses or explicit try-catch constructs.
 
 - **Local Script Security** -> 🟢 Ok\
-    * The iFlow does not contain local scripts. No security risk identified for insecure classes.
+    - There are no local scripts, so no check is necessary for usage of `com.sap.it.api.securestore` or `com.sap.it.api.keystore` classes.
 
 - **Iflow Organization** -> 🟢 Ok\
-    * There is only one call activity in the sequence flow.
+    - There is only one `callActivity` in the sequence flow, which is less than the threshold of 10.
 
 - **Iflow Attachments** -> 🟢 Ok\
-    * No local scripts, so no risk for creating attachments for successful messages.
+    - There are no local scripts, so no attachments can be created using class messageLogFactory.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-    * The iFlow is a SOAP to SOAP scenario, not involving IDocs.
+    - The iFlow doesn't seem to involve IDocs based on the provided XML.
 
 - **File Rules** -> 🟡 Does not apply\
-    * The iFlow is a SOAP to SOAP scenario, not involving file processing.
+    - The iFlow doesn't seem to process files directly based on the provided XML.
 
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-    * The iFlow exposes a SOAP endpoint. The ERP Sender Adapter has property ERP_enableBasicAuthentication_8=true, meaning that Basic Auth is enabled. This is considered insecure, so OAuth or Certificates usage should be prefered. Also check for role ESBMessaging.send assignment in case Basic Auth scenario is mandatory
+    - The iFlow exposes a SOAP endpoint from ERP (Sender). The `ERP_enableBasicAuthentication_8` parameter is externalized, which suggests it could be enabled. The iflow requires a check to verify that the iflow is not configured to allow Basic Auth and uses ESBMessaging.send role, either hardcoded in BPMN XML or in Configured values, that´s considered insecure.
