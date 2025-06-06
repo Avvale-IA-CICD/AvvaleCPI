@@ -3,40 +3,40 @@ markdown
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🔴 Check Required\
-    The iFlow contains "callActivity" steps with default names like "Set Custom Status". These should be renamed to reflect their specific function within the iFlow for better clarity.
+    At least one "callActivity" step ("DemoStep") uses a generic name. The steps "Parse Error" and "Set Custom Status" are repeated in multiple sub processes.
 
 - **Monitoring Standard Headers** -> 🟢 Ok\
-    The iFlow uses standard headers like `SAP_Sender`, `SAP_Receiver`, and `SAP_MessageType` which aid in monitoring.
+    The iFlow is using standard headers like `SAP_Sender`, `SAP_Receiver`, `SAP_MessageType`.
 
 - **Monitoring Custom Headers** -> 🟢 Ok\
-    The iFlow uses custom headers "IDocOut", "IDocIn", and "SNDPRN" in the scripts "csIdocOut" and "csIdocIn" for enhanced payload search and filtering.
+    The iFlow is using custom headers such as `IDocIn` and `SNDPRN` for monitoring (in `csIdocIn` script).
 
 - **Iflow Metadata** -> 🟢 Ok\
-    The `metainfo.prop` file contains the `description`, `source`, and `target` metadata.
+    iFlow metadata (source, target, description) is populated in `metainfo.prop`.
 
 - **Iflow Id** -> 🔴 Check Required\
-    The `Bundle-SymbolicName` in `MANIFEST.MF` is `MMZ_-_IDOC_-_Single_Receiver_with_ACK`. It should follow Java notation (e.g., `com.example.idoc.receiver`).
+    The `Bundle-SymbolicName` in `MANIFEST.MF` (MMZ_-_IDOC_-_Single_Receiver_with_ACK) uses underscores and hyphens instead of the recommended java class style notation with dots.
 
 - **Parameter Externalization** -> 🟢 Ok\
-    The iFlow externalizes parameters such as URLs, credentials, location IDs, and retry intervals using properties files (e.g., `ReceiverAddress`, `SS4_CREDENTIAL`, `LOCATION_ID`).
+    Important parameters like URLs, credential names, and datastore names are externalized as configuration parameters.
 
 - **Error Handling** -> 🟢 Ok\
-    The iFlow includes error handling logic within sub-processes (`Process Delivery Exception`, `Process Logic Exception`) using error start events and script tasks to parse errors and set custom statuses.
+    The iFlow implements error handling with error subprocesses (`Process Delivery Exception`, `Process Logic Exception`) and custom status settings.
 
 - **Local Script Security** -> 🟢 Ok\
-    The Groovy scripts do not use the `com.sap.it.api.securestore` or `com.sap.it.api.keystore` packages.
+    The groovy scripts don't use the security related packages `com.sap.it.api.securestore` or `com.sap.it.api.keystore`.
 
 - **Iflow Organization** -> 🟢 Ok\
-    The iFlow does not appear to have any sequence flows with more than 10 "callActivity" steps.
+    The iflow doesn't have more than 10 "callActivity" elements in any "SequenceFlow".
 
-- **Iflow Attachments** -> 🔴 Check Required\
-    The groovy scripts "csIdocOut" and "csIdocIn" create MessageLog attachments, making use of class messageLogFactory during groovy scripting. This might represent a security/resource consumption issue, only failed messages should be logged, normally in exception process.
+- **Iflow Attachments** -> 🟢 Ok\
+    The groovy scripts doesn't create attachments for succesful messages.
 
 - **IDoc Rules** -> 🟢 Ok\
-    The iFlow logs the `IDOCNUM` value as a custom header. The "Init Message" call activity extracts `DOCNUM` header which is the IDoc number, also scripts "csIdocOut" and "csIdocIn" log the IDoc number to custom headers.
+    The iFlow is logging `IDOCNUM` as a custom header (`IDocIn`) in the `csIdocIn` script.
 
 - **File Rules** -> 🟡 Does not apply\
-    This rule is not applicable as the iFlow does not directly deal with files.
+    This iFlow does not process files.
 
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-    The iFlow uses an IDoc sender adapter. The property `senderAuthType` is `RoleBased` and `userRole` is externalized. However, it's recommended not to use ESBMessaging.send role, ensure the iflow not is configured to allow Basic Auth and confirm whether the assigned custom role has excessive permissions.
+    The iFlow exposes an endpoint with the `IDOC` sender adapter. The configuration `senderAuthType` is set to `RoleBased` using the `{{SENDER_ROLE}}` parameter. Verify that no Basic Authentication is enabled and that the `ESBMessaging.send` role is not being directly assigned or hardcoded. Basic Authentication is disabled as per the properties.
