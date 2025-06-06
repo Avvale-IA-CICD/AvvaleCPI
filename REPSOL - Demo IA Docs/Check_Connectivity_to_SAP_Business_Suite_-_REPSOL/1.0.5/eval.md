@@ -2,40 +2,40 @@
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🟢 Ok\
-  No generic call activity names like Sender, Receiver, Content Modifier, Router found. The iFlow uses a Mapping step with the name "Mapping".
+    No standard names like Sender, Receiver, Content Modifier, Request Reply, or Router are used for the callActivity step. The existing `callActivity` is named "Mapping."
 
 - **Monitoring Standard Headers** -> 🔴 Check Required\
-  The iFlow does not explicitly define or use standard monitoring headers such as SAP_Sender, SAP_Receiver, SAP_MessageType, or SAP_ApplicationID.
+    The provided BPMN XML does not explicitly show the use of standard monitoring headers like SAP_Sender, SAP_Receiver, SAP_MessageType, or SAP_ApplicationID. Review the mapping or any scripting within the iflow to confirm if these headers are being utilized for monitoring purposes.
 
 - **Monitoring Custom Headers** -> 🔴 Check Required\
-  The iFlow does not explicitly define or use custom headers for enhanced payload search and filtering.
+    The provided BPMN XML does not explicitly show the creation and utilization of Custom Headers for monitoring. Review the mapping or any scripting within the iflow to confirm if custom headers are being utilized for monitoring purposes.
 
 - **Iflow Metadata** -> 🟢 Ok\
-  The metainfo.prop file contains values for source, target, and description.
+    The `metainfo.prop` file contains values for source (SAPCloudforCustomer), target (SAPERP), and description (Check Connectivity with SAP Business Suite).
 
 - **Iflow Id** -> 🔴 Check Required\
-  The Bundle-SymbolicName in MANIFEST.MF (Check_Connectivity_to_SAP_Business_Suite_-_REPSOL) uses underscores and hyphens.  It should follow Java naming conventions (e.g., com.sap.check.cod.connectivity).
+    The `MANIFEST.MF` file's `Bundle-SymbolicName` is `Check_Connectivity_to_SAP_Business_Suite_-_REPSOL`. This does not follow the recommended Java package naming convention (using dots instead of underscores or hyphens). It should be refactored.
 
 - **Parameter Externalization** -> 🟢 Ok\
-  The iFlow externalizes several parameters, including authentication data, URLs, and LocationId using placeholders `{{...}}`.
+    Several parameters like URLs, authentication details, and location ID are externalized using variables (e.g., {{COD_address_2}}, {{artifactname}}, {{location-id}}), which is a good practice.
 
 - **Error Handling** -> 🔴 Check Required\
-  There is no explicit error handling implemented in the provided BPMN XML. There are no explicit exception subprocess or error events in the flow.
+    The provided BPMN XML does not explicitly show any error handling mechanisms within the iflow steps. Verify if any error handling is implemented within the mapping or any script.
 
 - **Local Script Security** -> 🟢 Ok\
-  No usage of classes from packages `com.sap.it.api.securestore` or `com.sap.it.api.keystore` found in the provided data.
+    No local scripts were found in the provided document.
 
 - **Iflow Organization** -> 🟢 Ok\
-  The iFlow has only one `callActivity` in the `SequenceFlow`, so there is no readability concern.
+    The iflow contains only one "callActivity" step within the main sequence flow, which is far below the suggested limit of 10.
 
 - **Iflow Attachments** -> 🟢 Ok\
-  There is no mention to class `messageLogFactory` to create attachments.
+    No local scripts were found in the provided document, so there is no use of class messageLogFactory during groovy scripting.
 
 - **IDoc Rules** -> 🟡 Does not apply\
-  This iFlow does not appear to process IDocs.
+    The iflow does not appear to be processing IDocs based on the provided XML.
 
 - **File Rules** -> 🟡 Does not apply\
-  This iFlow does not appear to process files.
+    The iflow does not appear to be processing files based on the provided XML.
 
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-  The iFlow has an inbound SOAP endpoint exposed through `Participant_1` (COD) and has `COD_enableBasicAuthentication_3` set to `true` which can represent a security issue if not correctly secured with roles and policies to prevent basic authentication. Also, the `ERP` endpoint is using basic authentication with the parameter `ERP_authentication_5=Basic`. This is considered insecure and must be secured.
+    The iFlow exposes an endpoint with the SOAP Sender Adapter. The property `COD_enableBasicAuthentication_3` is set to true, which could be insecure if the iflow is also configured to use the ESBMessaging.send role (not explicitly found in the provided files). A more secure authentication method is recommended. Furthermore, ensure the authentication and authorization are handled securely if the iflow allows basic authentication.
