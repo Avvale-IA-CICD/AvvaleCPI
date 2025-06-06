@@ -3,28 +3,40 @@ markdown
 
 **Best Practices Summary**
 - **Iflow Steps Naming** -> 🟢 Ok\
-    No standard callActivity names found. The only callActivity is named "Mapping".
+    All call activities have meaningful names.  No default names like "Content Modifier" or "Router" are used.
+
 - **Monitoring Standard Headers** -> 🔴 Check Required\
-    No explicit mention of standard headers being used for monitoring.
+    The iFlow XML does not explicitly define any standard headers being set for monitoring purposes.  This requires a manual check to confirm if standard headers are being used within scripts or other components.
+
 - **Monitoring Custom Headers** -> 🔴 Check Required\
-    No explicit use of custom headers found for monitoring purposes.
+    The iFlow XML does not explicitly define any custom headers being set for monitoring.  Requires manual check to confirm if custom headers are being used within scripts or other components to enhance payload search and filtering.
+
 - **Iflow Metadata** -> 🟢 Ok\
-    Metadata such as source, target and description are populated in metainfo.prop.
+    The `metainfo.prop` file contains values for `source`, `target`, and `description`.
+
 - **Iflow Id** -> 🔴 Check Required\
-    The Bundle-SymbolicName in MANIFEST.MF (Check_Connectivity_to_SAP_Business_Suite_-_REPSOL) uses underscores and hyphens, which is not in java class style notation.
+    The `MANIFEST.MF` file's `Bundle-SymbolicName` is `Check_Connectivity_to_SAP_Business_Suite_-_REPSOL`. This should follow java class notation with dots instead of underscores or hyphens. For example: com.sap.check.cod.connectivity.  This needs to be corrected.
+
 - **Parameter Externalization** -> 🟢 Ok\
-    Several important parameters like authentication data, URLs and locationId are externalized in the configuration parameters.
+    Multiple parameters, including authentication details, URLs, and the location ID are externalized as configuration parameters.
+
 - **Error Handling** -> 🔴 Check Required\
-    No explicit error handling mechanisms are evident in the iflow definition.
+    The iFlow XML doesn't show explicit error handling mechanisms. Requires manual investigation to determine if any error handling is implemented within mapping or other components.
+
 - **Local Script Security** -> 🟢 Ok\
-    No usage of classes from `com.sap.it.api.securestore` or `com.sap.it.api.keystore` is found in the provided information.
+    No usage of `com.sap.it.api.securestore` or `com.sap.it.api.keystore` classes is detected in the provided "Local Scripts Content."
+
 - **Iflow Organization** -> 🟢 Ok\
-    The iflow has only one callActivity, so there are no organization issues.
+    There is only one `callActivity` within the main sequence flow, so the number is not exceeding 10.
+
 - **Iflow Attachments** -> 🟢 Ok\
-    No evidence of attachment creation for successful messages using `messageLogFactory`.
+    No usage of `messageLogFactory` for creating attachments is detected in the provided "Local Scripts Content".
+
 - **IDoc Rules** -> 🟡 Does not apply\
-    The iFlow is using SOAP adapters and not IDoc adapters.
+    The iFlow does not appear to process IDocs.
+
 - **File Rules** -> 🟡 Does not apply\
-    The iFlow is using SOAP adapters and not file adapters.
+    The iFlow does not appear to process files.
+
 - **Inbound Endpoint Rules** -> 🔴 Check Required\
-    The iflow exposes endpoints with SOAP Sender Adapter. It´s configured to allow Basic Auth via parameter COD_enableBasicAuthentication_3. Need to check that ESBMessaging.send role is not being used.
+    The iFlow exposes an endpoint through a SOAP sender adapter using `Participant_1`. The `COD_enableBasicAuthentication_3` parameter is set to `true`. The BPMN does not explicitly define if the `ESBMessaging.send` role is used. This requires manually checking the security configuration to ensure it doesn't rely on basic authentication with `ESBMessaging.send`.
